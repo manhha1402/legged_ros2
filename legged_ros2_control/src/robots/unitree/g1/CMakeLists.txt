@@ -17,6 +17,13 @@ target_link_libraries(g1_node
   fmt::fmt
 )
 
+# Ensure correct CycloneDDS libraries are used at runtime
+# (avoids conflict with ROS Humble's version which lacks libddscxx)
+# RPATH takes precedence over LD_LIBRARY_PATH, unlike RUNPATH
+set_target_properties(g1_node PROPERTIES
+  LINK_FLAGS "-Wl,--disable-new-dtags,-rpath,/usr/local/lib"
+)
+
 install(
   TARGETS g1_node
   DESTINATION lib/${PROJECT_NAME}

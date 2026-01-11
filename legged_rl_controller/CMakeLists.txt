@@ -4,6 +4,9 @@ project(legged_rl_controller)
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+include(cmake/dependencies.cmake)
+onnx_dependencies()
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
@@ -20,11 +23,6 @@ find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(YAML_CPP REQUIRED yaml-cpp)
 find_package(generate_parameter_library REQUIRED)
-
-get_filename_component(ONNXRUNTIME_ABSOLUTE_PATH "../third_party/onnxruntime-linux-x64-1.22.0" ABSOLUTE)
-list(APPEND CMAKE_PREFIX_PATH "${ONNXRUNTIME_ABSOLUTE_PATH}")
-set(ONNXRUNTIME_INCLUDE_DIRS "${ONNXRUNTIME_ABSOLUTE_PATH}/include")
-set(ONNXRUNTIME_LIBRARIES "${ONNXRUNTIME_ABSOLUTE_PATH}/lib/libonnxruntime.so")
 
 generate_parameter_library(
   legged_rl_controller_parameters
@@ -45,13 +43,10 @@ target_include_directories(legged_rl_controller PUBLIC
 )
 target_link_libraries(legged_rl_controller PUBLIC
   ${YAML_CPP_LIBRARIES}
-  ${ONNXRUNTIME_LIBRARIES}
+  onnxruntime
   legged_rl_controller_parameters
 )
-set_target_properties(legged_rl_controller PROPERTIES
-    INSTALL_RPATH "${ONNXRUNTIME_ABSOLUTE_PATH}/lib"
-    INSTALL_RPATH_USE_LINK_PATH TRUE
-)
+
 ament_target_dependencies(
   legged_rl_controller PUBLIC
   rclcpp

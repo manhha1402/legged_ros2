@@ -14,6 +14,12 @@ target_include_directories(unitree_system_interface PUBLIC
 ament_target_dependencies(unitree_system_interface ${THIS_PACKAGE_DEPENDS})
 target_link_libraries(unitree_system_interface unitree_sdk2 legged_system_interface)
 
+# Ensure correct CycloneDDS libraries are used at runtime
+# (avoids conflict with ROS Humble's version which lacks libddscxx)
+set_target_properties(unitree_system_interface PROPERTIES
+  LINK_FLAGS "-Wl,--disable-new-dtags,-rpath,/usr/local/lib"
+)
+
 add_subdirectory(g1)
 add_subdirectory(go2)
 

@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 3.8)
 project(legged_ros2_control)
 
-option(BUILD_UNITREE "Build Unitree related targets" OFF)
+option(BUILD_UNITREE "Build Unitree related targets" ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
