@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import RegisterEventHandler, DeclareLaunchArgument
+from launch.actions import RegisterEventHandler, DeclareLaunchArgument, SetEnvironmentVariable, OpaqueFunction
 from launch.conditions import IfCondition
 from launch.event_handlers import OnProcessExit
 from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, LaunchConfiguration
@@ -103,8 +103,8 @@ def generate_launch_description():
             "prefix:=", 
             prefix,
             " ", 
-            "enable_sim:=",
-            "false", 
+            "network_interface:=",
+            network_interface,
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -212,7 +212,25 @@ def generate_launch_description():
         # rqt_robot_steering
     ]
 
-    return LaunchDescription(declared_arguments + nodes)
+    # Configure CycloneDDS with the specified network interface
+    # Use 'lo' for simulation, 'enp129s0' (or your interface) for real robot
+    def setup_cyclonedds(context):
+        net_if = LaunchConfiguration('network_interface').perform(context)
+        return [
+            SetEnvironmentVariable('RMW_IMPLEMENTATION', 'rmw_cyclonedds_cpp'),
+            SetEnvironmentVariable(
+                'CYCLONEDDS_URI',
+                f'<CycloneDDS><Domain><General><Interfaces>'
+                f'<NetworkInterface name="{net_if}" priority="default" multicast="default" />'
+                f'</Interfaces></General></Domain></CycloneDDS>'
+            ),
+        ]
+    
+    return LaunchDescription(
+        declared_arguments + 
+        [OpaqueFunction(function=setup_cyclonedds)] + 
+        nodes
+    )
 
 
 

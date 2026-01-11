@@ -20,7 +20,7 @@ G1SystemInterface::on_init(const hardware_interface::HardwareInfo &info) {
   }
 
   if (imu_data_.size() != 1) {
-    RCLCPP_ERROR(*logger_, "G1SystemInterface only supports one IMU sensor");
+    RCLCPP_ERROR(logger_, "G1SystemInterface only supports one IMU sensor");
     return CallbackReturn::ERROR;
   }
 
@@ -37,14 +37,10 @@ G1SystemInterface::on_init(const hardware_interface::HardwareInfo &info) {
       node->get_parameter_or<bool>("enable_lowlevel_write", true);
 
   // debug print
-  RCLCPP_INFO(*logger_, "G1SystemInterface get param network interface: %s",
+  RCLCPP_INFO(logger_, "G1SystemInterface get param network interface: %s",
               network_interface_.c_str());
-  RCLCPP_INFO(*logger_, "G1SystemInterface get param low-level write: %s",
+  RCLCPP_INFO(logger_, "G1SystemInterface get param low-level write: %s",
               enable_lowlevel_write_ ? "true" : "false");
-
-  logger_ = std::make_shared<rclcpp::Logger>(
-      rclcpp::get_logger("controller_manager.resource_manager.hardware_"
-                         "component.system.G1SystemInterface"));
 
   return CallbackReturn::SUCCESS;
 }
@@ -52,16 +48,16 @@ G1SystemInterface::on_init(const hardware_interface::HardwareInfo &info) {
 CallbackReturn G1SystemInterface::on_configure(
     const rclcpp_lifecycle::State & /*previous_state*/) {
 
-  RCLCPP_INFO(*logger_, "Configuring G1SystemInterface...");
+  RCLCPP_INFO(logger_, "Configuring G1SystemInterface...");
 
   unitree::robot::ChannelFactory::Instance()->Init(0, network_interface_);
 
-  RCLCPP_INFO(*logger_,
+  RCLCPP_INFO(logger_,
               "G1SystemInterface configured with network interface: %s",
               network_interface_.c_str());
 
   // -------------------------------------- TODO
-  // -------------------------------------- RCLCPP_INFO(*logger_, "Trying to
+  // -------------------------------------- RCLCPP_INFO(logger_, "Trying to
   // shutdown motion control-related service..."); try {
   //   // try to shutdown motion control-related service
   //   msc_ = std::make_shared<unitree::robot::b2::MotionSwitcherClient>();
@@ -87,12 +83,12 @@ CallbackReturn G1SystemInterface::on_configure(
   lowstate_subscriber_ = std::make_shared<g1::LowStateSubscriber>();
   lowcmd_publisher_ = std::make_unique<g1::LowCmdPublisher>();
 
-  RCLCPP_INFO(*logger_,
+  RCLCPP_INFO(logger_,
               "G1SystemInterface waiting for connection to G1 robot...");
   lowstate_subscriber_->wait_for_connection();
-  RCLCPP_INFO(*logger_, "G1SystemInterface connected to G1 robot");
+  RCLCPP_INFO(logger_, "G1SystemInterface connected to G1 robot");
 
-  RCLCPP_INFO(*logger_, "G1SystemInterface initialized successfully");
+  RCLCPP_INFO(logger_, "G1SystemInterface initialized successfully");
 
   return CallbackReturn::SUCCESS;
 }
@@ -102,7 +98,7 @@ bool G1SystemInterface::build_joint_data_() {
     const auto &jnt_name = joint_data_[i].name;
     auto it = g1_joint_index_map.find(jnt_name);
     if (it == g1_joint_index_map.end()) {
-      RCLCPP_ERROR(*logger_, "Joint %s not found in G1 joint index map",
+      RCLCPP_ERROR(logger_, "Joint %s not found in G1 joint index map",
                    jnt_name.c_str());
       return false;
     }

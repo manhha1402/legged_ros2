@@ -80,8 +80,8 @@ public:
   export_command_interfaces() override;
 
 protected:
-  std::shared_ptr<rclcpp::Logger> logger_;
-
+  const rclcpp::Logger logger_ =
+      rclcpp::get_logger("legged_ros2_control.legged_system_interface");
   // Data
   std::vector<JointData> joint_data_;
   std::vector<ImuData> imu_data_;

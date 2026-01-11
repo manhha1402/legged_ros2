@@ -1,189 +1,170 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.14)
 project(legged_ros2_control)
 
-option(BUILD_UNITREE "Build Unitree related targets" ON)
-
+# Compiler settings
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-# find dependencies
+# =============================================================================
+# Dependencies
+# =============================================================================
+
 find_package(ament_cmake REQUIRED)
-find_package(ament_cmake_ros REQUIRED)
 find_package(ament_cmake_python REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclpy REQUIRED)
-find_package(hardware_interface REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
-find_package(controller_manager REQUIRED)
-find_package(urdf REQUIRED)
-find_package(glfw3 REQUIRED)
-find_package(rosgraph_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 
-# Try to find mujoco
-find_package(mujoco QUIET)
-if(mujoco_FOUND)
-  message(STATUS "Mujoco build from source has been found")
-  set(MUJOCO_LIB mujoco::mujoco)
-  set(MUJOCO_INCLUDE_DIR ${MUJOCO_INCLUDE_DIR})
-elseif(DEFINED ENV{MUJOCO_DIR})
-  message(STATUS "Mujoco build from source has not been found. Attempting to find the binary in $ENV{MUJOCO_DIR} instead.")
-  find_library(MUJOCO_LIB mujoco HINTS $ENV{MUJOCO_DIR}/lib)
-  if(NOT MUJOCO_LIB)
-    message(FATAL_ERROR "Failed to find binary in $ENV{MUJOCO_DIR}")
-  endif()
-  set(MUJOCO_INCLUDE_DIR $ENV{MUJOCO_DIR}/include)
-else()
-  message(FATAL_ERROR "Failed to find mujoco with find_package.
-  Either build and install mujoco from source or set the MUJOCO_DIR environment variable to tell CMake where to find the binary install. ")
-endif()
-
-set(THIS_PACKAGE_DEPENDS
-  ament_cmake
-  rclcpp
+set(ROS_DEPENDENCIES
+  controller_manager
+  controller_manager_msgs
+  geometry_msgs
   hardware_interface
   pluginlib
-  controller_manager
-  urdf
-  glfw3
+  rclcpp
+  rclcpp_lifecycle
+  rclpy
+  realtime_tools
   rosgraph_msgs
-  geometry_msgs
+  std_msgs
+  urdf
 )
 
-# ------------------------------------------------------------
-# Legged system interface
-# ------------------------------------------------------------
+foreach(dep ${ROS_DEPENDENCIES})
+  find_package(${dep} REQUIRED)
+endforeach()
 
-add_library(legged_system_interface src/legged_system_interface.cpp)
-target_compile_features(legged_system_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+# External dependencies
+list(APPEND CMAKE_PREFIX_PATH "/opt/unitree_robotics")
+find_package(unitree_sdk2 REQUIRED)
+find_package(spdlog REQUIRED)
+
+# =============================================================================
+# Libraries
+# =============================================================================
+
+# Legged system interface (hardware plugin)
+add_library(legged_system_interface SHARED src/legged_system_interface.cpp)
 target_include_directories(legged_system_interface PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-ament_target_dependencies(
+  $<INSTALL_INTERFACE:include>
+)
+target_compile_definitions(legged_system_interface
+  PRIVATE LEGGED_ROS2_CONTROL_BUILDING_LIBRARY
+)
+ament_target_dependencies(legged_system_interface
+  hardware_interface
+  pluginlib
+  rclcpp
+  rclcpp_lifecycle
+)
+
+add_library(unitree_system_interface SHARED 
+  src/robots/g1_system_interface.cpp
+  src/robots/go2_system_interface.cpp
+)
+target_compile_features(unitree_system_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
+target_include_directories(unitree_system_interface PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+target_link_libraries(unitree_system_interface
   legged_system_interface
-  "rclcpp"
-  "hardware_interface"
-  "pluginlib"
-  "rclcpp_lifecycle"
+  $<BUILD_INTERFACE:unitree_sdk2>
 )
-# Causes the visibility macros to use dllexport rather than dllimport,
-# which is appropriate when building the dll but not consuming it.
-target_compile_definitions(legged_system_interface PRIVATE "LEGGED_ROS2_CONTROL_BUILDING_LIBRARY")
+ament_target_dependencies(unitree_system_interface ${ROS_DEPENDENCIES})
+# Ensure correct CycloneDDS libraries are used at runtime
+# (avoids conflict with ROS Humble's version which lacks libddscxx)
+set_target_properties(unitree_system_interface PROPERTIES
+  LINK_FLAGS "-Wl,--disable-new-dtags,-rpath,/usr/local/lib"
+)
 
-# ------------------------------------------------------------
-# Mujoco system interface
-# ------------------------------------------------------------
 
-add_library(mujoco_system_interface SHARED src/mujoco/mujoco_system_interface.cpp)
-target_compile_features(mujoco_system_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-target_include_directories(mujoco_system_interface PUBLIC
+# Legged ros2 control library
+add_library(legged_ros2_control_lib SHARED src/legged_ros2_control.cpp)
+target_include_directories(legged_ros2_control_lib PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  ${MUJOCO_INCLUDE_DIR}  
 )
-ament_target_dependencies(mujoco_system_interface ${THIS_PACKAGE_DEPENDS})
-target_link_libraries(mujoco_system_interface ${MUJOCO_LIB} legged_system_interface)
-
-# ------------------------------------------------------------
-# Mujoco ros2 node
-# ------------------------------------------------------------
-
-add_executable(mujoco_node
-  src/mujoco/mujoco_node.cpp
-  src/mujoco/mujoco_ros2_control.cpp
-  src/mujoco/mujoco_cameras.cpp
-  src/mujoco/mujoco_rendering.cpp
-  src/legged_ros2_control.cpp
+target_link_libraries(legged_ros2_control_lib legged_system_interface)
+ament_target_dependencies(legged_ros2_control_lib
+  controller_manager
+  hardware_interface
+  pluginlib
+  rclcpp
+  realtime_tools
+  rosgraph_msgs
+  std_msgs
 )
-target_compile_features(mujoco_node PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
-target_include_directories(mujoco_node PUBLIC
+
+# =============================================================================
+# Executables
+# =============================================================================
+
+set(UNITREE_NODE_DEPS
+  controller_manager_msgs
+  geometry_msgs
+  rclcpp
+  std_msgs
+)
+
+# G1 robot node
+add_executable(g1_node node/g1_node.cpp)
+target_include_directories(g1_node PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-  ${MUJOCO_INCLUDE_DIR}
 )
-ament_target_dependencies(mujoco_node ${THIS_PACKAGE_DEPENDS})
-target_link_libraries(mujoco_node
-  ${MUJOCO_LIB}
-  mujoco_system_interface
-  glfw
+target_link_libraries(g1_node legged_ros2_control_lib unitree_sdk2 spdlog::spdlog)
+ament_target_dependencies(g1_node ${UNITREE_NODE_DEPS})
+set_target_properties(g1_node PROPERTIES
+  LINK_FLAGS "-Wl,--disable-new-dtags,-rpath,/usr/local/lib"
 )
 
-# ------------------------------------------------------------
-# Interface for Unitree robots
-# ------------------------------------------------------------
-
-if(BUILD_UNITREE)
-  add_subdirectory(src/robots/unitree)
-endif()
-
-# ------------------------------------------------------------
-# Install Python modules
-# ------------------------------------------------------------
+# Go2 robot node
+add_executable(go2_node node/go2_node.cpp)
+target_include_directories(go2_node PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+target_link_libraries(go2_node legged_ros2_control_lib unitree_sdk2 spdlog::spdlog)
+ament_target_dependencies(go2_node ${UNITREE_NODE_DEPS})
+set_target_properties(go2_node PROPERTIES
+  LINK_FLAGS "-Wl,--disable-new-dtags,-rpath,/usr/local/lib"
+)
 
 ament_python_install_package(${PROJECT_NAME})
-# Install Python executables
+
 install(PROGRAMS
-  src/legged_teleop_keyboard.py
+  scripts/legged_teleop_keyboard.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# ------------------------------------------------------------
+# =============================================================================
 # Installation
-# ------------------------------------------------------------
+# =============================================================================
 
-# Export hardware plugins
 pluginlib_export_plugin_description_file(legged_ros2_control legged_ros2_control_plugins.xml)
 
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
-install(
-  TARGETS legged_system_interface
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
+install(TARGETS legged_system_interface legged_ros2_control_lib unitree_system_interface
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
-install(
-  TARGETS mujoco_system_interface
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-)
-install(
-  TARGETS mujoco_node
+
+install(TARGETS g1_node go2_node
   DESTINATION lib/${PROJECT_NAME}
 )
-install(
-  DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
-)
 
+# =============================================================================
+# Export
+# =============================================================================
 
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # comment the line when a copyright and license is added to all source files
-  set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # comment the line when this package is in a git repo and when
-  # a copyright and license is added to all source files
-  set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
-endif()
-
-ament_export_include_directories(
-  include
-)
-ament_export_libraries(
-  legged_system_interface
-)
-ament_export_targets(
-  export_${PROJECT_NAME}
-)
+ament_export_include_directories(include)
+ament_export_libraries(legged_system_interface legged_ros2_control_lib unitree_system_interface)
+ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(${ROS_DEPENDENCIES})
 
 ament_package()

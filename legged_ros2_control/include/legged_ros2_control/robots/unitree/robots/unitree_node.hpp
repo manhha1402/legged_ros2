@@ -61,6 +61,8 @@ public:
     RCLCPP_INFO(node_->get_logger(),
                 "Unitree node try to connect in network interface: %s",
                 unitree_net_if_.c_str());
+    // Domain 0 is required to communicate with real Unitree robot
+    // Set ROS_DOMAIN_ID=1 to avoid conflict with ROS 2's CycloneDDS
     unitree::robot::ChannelFactory::Instance()->Init(0, unitree_net_if_);
     low_state_subscriber_ =
         std::make_shared<UnitreeSubscriberType>("rt/lowstate");

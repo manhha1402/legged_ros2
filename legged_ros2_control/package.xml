@@ -3,9 +3,10 @@
 <package format="3">
   <name>legged_ros2_control</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Legged ROS2 control</description>
   <maintainer email="zitongbai@outlook.com">xiaobaige</maintainer>
-  <license>TODO: License declaration</license>
+  <maintainer email="v.hahm@vinmotion.net">Ha Hoang</maintainer>
+  <license>MIT</license>
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>ament_cmake</buildtool_depend>
@@ -13,16 +14,18 @@
 
   <depend>rclpy</depend>
 
-  <depend>rclcpp</depend>
+  <depend>controller_manager</depend>
+  <depend>controller_manager_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp_lifecycle</depend>
-  <depend>controller_manager</depend>
-  <depend>urdf</depend>
+  <depend>rclcpp</depend>
+  <depend>realtime_tools</depend>
   <depend>rosgraph_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>urdf</depend>
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
