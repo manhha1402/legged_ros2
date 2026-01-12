@@ -5,7 +5,7 @@
 
 #include "legged_ros2_control/robots/unitree/dds_wrapper/common/Subscription.h"
 #include "legged_ros2_control/robots/unitree/robots/g1/define.hpp"
-#include <eigen3/Eigen/Dense>
+// #include <eigen3/Eigen/Dense>
 
 #include <unitree/idl/go2/MotorStates_.hpp>
 #include <unitree/idl/hg/HandCmd_.hpp>

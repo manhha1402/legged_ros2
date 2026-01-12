@@ -5,7 +5,7 @@
 
 #include "legged_ros2_control/robots/unitree/dds_wrapper/common/Publisher.h"
 #include "legged_ros2_control/robots/unitree/dds_wrapper/common/crc.h"
-#include <eigen3/Eigen/Dense>
+// #include <eigen3/Eigen/Dense>
 
 #include <unitree/idl/go2/MotorCmds_.hpp>
 #include <unitree/idl/hg/LowCmd_.hpp>

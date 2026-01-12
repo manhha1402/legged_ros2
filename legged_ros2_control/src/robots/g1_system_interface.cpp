@@ -56,29 +56,36 @@ CallbackReturn G1SystemInterface::on_configure(
               "G1SystemInterface configured with network interface: %s",
               network_interface_.c_str());
 
-  // -------------------------------------- TODO
-  // -------------------------------------- RCLCPP_INFO(logger_, "Trying to
-  // shutdown motion control-related service..."); try {
-  //   // try to shutdown motion control-related service
-  //   msc_ = std::make_shared<unitree::robot::b2::MotionSwitcherClient>();
-  //   std::cout << "111111111111111" << std::endl;
-  //   msc_->SetTimeout(5.0f);
-  //   std::cout << "22222222222222222" << std::endl;
-  //   msc_->Init();
-  //   std::cout << "333333333333333" << std::endl;
-  //   std::string form, name;
-  //   while (msc_->CheckMode(form, name), !name.empty()) {
-  //     std::cout << "44444444444444" << std::endl;
-  //     if (msc_->ReleaseMode())
-  //       RCLCPP_WARN(*logger_, "Failed to switch to Release Mode");
-  //     sleep(5);
-  //   }
-  // } catch (const std::exception& e) {
-  //   RCLCPP_ERROR(*logger_, "Error in motion switcher: %s", e.what());
-  //   return CallbackReturn::ERROR;
-  // }
-  // RCLCPP_INFO(*logger_, "Motion control-related service shutdown
-  // successfully");
+  // Skip motion switcher for simulation (loopback interface)
+  if (network_interface_ != "lo") {
+    RCLCPP_INFO(logger_,
+                "Trying to shutdown motion control-related service...");
+    try {
+      msc_ = std::make_shared<unitree::robot::b2::MotionSwitcherClient>();
+      msc_->SetTimeout(3.0f); // Shorter timeout
+      msc_->Init();
+
+      std::string form, name;
+      while (msc_->CheckMode(form, name), !name.empty()) {
+        RCLCPP_INFO(logger_, "Releasing motion mode: %s", name.c_str());
+        if (msc_->ReleaseMode()) {
+          RCLCPP_WARN(logger_, "Failed to switch to Release Mode");
+        }
+        sleep(2);
+      }
+      RCLCPP_INFO(logger_,
+                  "Motion control-related service shutdown successfully");
+    } catch (const std::exception &e) {
+      RCLCPP_WARN(logger_,
+                  "Motion switcher error (may be normal in simulation): %s",
+                  e.what());
+      // Continue anyway - this is not critical for operation
+    }
+  } else {
+    RCLCPP_INFO(
+        logger_,
+        "Skipping motion switcher (simulation mode with loopback interface)");
+  }
 
   lowstate_subscriber_ = std::make_shared<g1::LowStateSubscriber>();
   lowcmd_publisher_ = std::make_unique<g1::LowCmdPublisher>();
