@@ -155,10 +155,10 @@ return_type G1SystemInterface::read(const rclcpp::Time & /*time*/,
                                  .accelerometer()[2]; // linear acceleration z
 
   if (mode_machine_ != lowstate_subscriber_->msg_.mode_machine()) {
-    if (mode_machine_ == 0)
-      std::cout << "G1 type: "
-                << unsigned(lowstate_subscriber_->msg_.mode_machine())
-                << std::endl;
+    // if (mode_machine_ == 0)
+    //   std::cout << "G1 type: "
+    //             << unsigned(lowstate_subscriber_->msg_.mode_machine())
+    //             << std::endl;
     mode_machine_ = lowstate_subscriber_->msg_.mode_machine();
   }
 

@@ -15,7 +15,7 @@
       <joint damping="0.0" armature="0.01" frictionloss="0."/>
     </default>
     <default class="wrist_motor">
-      <joint damping="0.0" armature="0.01" frictionloss="0."/>
+      <joint damping="0.0" armature="0.0991" frictionloss="0."/>
     </default>
   </default>
 

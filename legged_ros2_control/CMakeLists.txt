@@ -145,7 +145,6 @@ install(PROGRAMS
 pluginlib_export_plugin_description_file(legged_ros2_control legged_ros2_control_plugins.xml)
 
 install(DIRECTORY include/ DESTINATION include)
-install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS legged_system_interface legged_ros2_control_lib unitree_system_interface
   EXPORT export_${PROJECT_NAME}

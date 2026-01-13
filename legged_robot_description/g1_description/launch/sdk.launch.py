@@ -29,16 +29,17 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "rl_policy", 
-            default_value="policy.onnx",
+            default_value="policy_27.onnx",
             description="RL policy file. This file is exported by IsaacLab automatically \
-                        when playing the policy.",
+                        when playing the policy. Use policy_27.onnx for 27-joint whole-body control.",
         )
     )
     declared_arguments.append(
         DeclareLaunchArgument(
             "controller_config", 
             default_value="vanilla_rl_controller.yaml",
-            description="Controller configuration file.",
+            description="Controller configuration file. Use vanilla_rl_controller.yaml for \
+                        27-joint whole-body RL control.",
         )
     )
     declared_arguments.append(
@@ -174,6 +175,19 @@ def generate_launch_description():
         executable="spawner",
         arguments=["rl_controller", "-c", "/controller_manager", "--inactive"],
     )
+
+    # NOTE: Arm trajectory controllers are only available when using legs_rl_arms_trajectory.yaml
+    # with a legs-only policy (e.g., policy_12.onnx with matching observation config)
+    # left_arm_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["left_arm_controller", "-c", "/controller_manager"],
+    # )
+    # right_arm_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["right_arm_controller", "-c", "/controller_manager"],
+    # )
 
     rqt_controller_manager = Node(
         package="rqt_controller_manager",
