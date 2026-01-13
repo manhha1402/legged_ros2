@@ -16,6 +16,9 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
+
     static_controller:
       type: legged_ros2_controller/StaticController
 
@@ -433,3 +436,8 @@ rl_controller:
         kd: 10.0
         default_pos: 0.0
 
+
+imu_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: imu-pelvis  # must match the IMU name in URDF/xacro
+    frame_id: pelvis

@@ -164,6 +164,12 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
+    imu_sensor_broadcaster_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["imu_sensor_broadcaster", "--controller-manager", "/controller_manager"],
+    )
+
     static_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -200,6 +206,30 @@ def generate_launch_description():
     #     executable="rqt_robot_steering",
     # )
 
+    # Chain spawners sequentially to avoid CycloneDDS participant exhaustion
+    # static_controller -> joint_state_broadcaster -> imu_sensor_broadcaster -> rl_controller
+    
+    delay_joint_state_after_static = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=static_controller_spawner,
+            on_exit=[joint_state_broadcaster_spawner],
+        )
+    )
+    
+    delay_imu_after_joint_state = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=joint_state_broadcaster_spawner,
+            on_exit=[imu_sensor_broadcaster_spawner],
+        )
+    )
+    
+    delay_rl_after_imu = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=imu_sensor_broadcaster_spawner,
+            on_exit=[rl_controller_spawner],
+        )
+    )
+    
     # Delay rviz start after `joint_state_broadcaster`
     delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -208,20 +238,14 @@ def generate_launch_description():
         )
     )
 
-    # Delay start of joint_state_broadcaster and rl_controller after static_controller_spawner
-    delay_after_static_controller_spawner = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=static_controller_spawner,
-            on_exit=[joint_state_broadcaster_spawner, rl_controller_spawner],
-        )
-    )
-
     nodes = [
         control_node,
         robot_state_pub_node,
         static_controller_spawner,
+        delay_joint_state_after_static,
+        delay_imu_after_joint_state,
+        delay_rl_after_imu,
         delay_rviz_after_joint_state_broadcaster_spawner,
-        delay_after_static_controller_spawner,
         rqt_controller_manager,
         # rqt_robot_steering
     ]
