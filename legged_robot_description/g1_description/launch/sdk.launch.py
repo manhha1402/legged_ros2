@@ -246,7 +246,7 @@ def generate_launch_description():
         delay_imu_after_joint_state,
         delay_rl_after_imu,
         delay_rviz_after_joint_state_broadcaster_spawner,
-        rqt_controller_manager,
+        # rqt_controller_manager,
         # rqt_robot_steering
     ]
 

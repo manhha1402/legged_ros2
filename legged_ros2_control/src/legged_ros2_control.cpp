@@ -73,7 +73,7 @@ void LeggedRos2Control::init() {
   clock_publisher_ =
       node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", 10);
 
-  urdf_string_ = this->get_robot_description_();
+  urdf_string_ = get_robot_description_();
 
   // in the default usage of ros2 control, the controlller manager is
   // responsible for parsing the hardware info from URDF and load the components
@@ -161,7 +161,7 @@ void LeggedRos2Control::init() {
   cm_thread_ = std::thread([&]() {
     if (realtime_tools::has_realtime_kernel()) {
       if (!realtime_tools::configure_sched_fifo(thread_priority)) {
-        RCLCPP_WARN(this->logger_,
+        RCLCPP_WARN(logger_,
                     "Could not enable FIFO RT scheduling policy: with error "
                     "number <%i>(%s). See "
                     "[https://control.ros.org/master/doc/ros2_control/"
@@ -170,25 +170,24 @@ void LeggedRos2Control::init() {
                     errno, strerror(errno));
       } else {
         RCLCPP_INFO(
-            this->logger_,
+            logger_,
             "Successful set up FIFO RT scheduling policy with priority %i.",
             thread_priority);
       }
     } else {
-      RCLCPP_WARN(this->logger_,
-                  "No real-time kernel detected on this system. See "
-                  "[https://control.ros.org/master/doc/ros2_control/"
-                  "controller_manager/doc/userdoc.html] "
-                  "for details on how to enable realtime scheduling.");
+      RCLCPP_WARN(logger_, "No real-time kernel detected on this system. See "
+                           "[https://control.ros.org/master/doc/ros2_control/"
+                           "controller_manager/doc/userdoc.html] "
+                           "for details on how to enable realtime scheduling.");
     } // end if has_realtime
 
     const auto period = std::chrono::nanoseconds(1'000'000'000 / update_rate_);
-    const auto cm_now = std::chrono::nanoseconds(
-        this->controller_manager_->now().nanoseconds());
+    const auto cm_now =
+        std::chrono::nanoseconds(controller_manager_->now().nanoseconds());
     std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>
         next_iteration_time{cm_now};
 
-    rclcpp::Time previous_time = this->controller_manager_->now();
+    rclcpp::Time previous_time = controller_manager_->now();
     rclcpp::Duration period_duration =
         rclcpp::Duration::from_nanoseconds(period.count());
     rclcpp::Duration period_error_threshold =
@@ -197,12 +196,12 @@ void LeggedRos2Control::init() {
 
     while (rclcpp::ok()) {
       // calculate measured period
-      const auto current_time = this->controller_manager_->now();
+      const auto current_time = controller_manager_->now();
       const auto measured_period = current_time - previous_time;
       previous_time = current_time;
 
       // execute update loop
-      this->update(current_time, measured_period);
+      update(current_time, measured_period);
 
       // wait until we hit the end of the period
       next_iteration_time += period;
@@ -218,8 +217,7 @@ void LeggedRos2Control::init() {
       // }
 
       if (use_sim_time) { // TODO: check sim time
-        this->controller_manager_->get_clock()->sleep_until(current_time +
-                                                            period);
+        controller_manager_->get_clock()->sleep_until(current_time + period);
       } else {
         std::this_thread::sleep_until(next_iteration_time);
       }
@@ -239,15 +237,15 @@ void LeggedRos2Control::init() {
   spin_thread_ = std::thread([this]() {
     RCLCPP_INFO(logger_,
                 "Spinning controller manager executor in a separate thread");
-    this->cm_executor_->spin();
+    cm_executor_->spin();
   });
 }
 
 void LeggedRos2Control::update(const rclcpp::Time &time,
                                const rclcpp::Duration &period) {
-  this->controller_manager_->read(time, period);
-  this->controller_manager_->update(time, period);
-  this->controller_manager_->write(time, period);
+  controller_manager_->read(time, period);
+  controller_manager_->update(time, period);
+  controller_manager_->write(time, period);
 }
 
 void LeggedRos2Control::import_components_(
