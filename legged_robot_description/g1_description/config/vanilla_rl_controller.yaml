@@ -1,6 +1,7 @@
 unitree_node:
   ros__parameters:
     cmd_vel:
+      publish: true
       scale:
         lin_vel_x: 0.5
         lin_vel_y: 0.5

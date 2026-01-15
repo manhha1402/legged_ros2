@@ -35,6 +35,8 @@ public:
             node_->get_parameter_or<float>("cmd_vel.scale.lin_vel_x", 1.0),
             node_->get_parameter_or<float>("cmd_vel.scale.lin_vel_y", 1.0),
             node_->get_parameter_or<float>("cmd_vel.scale.ang_vel_z", 1.0)},
+        publish_cmd_vel_(
+            node_->get_parameter_or<bool>("cmd_vel.publish", true)),
         unitree_net_if_(
             node_->get_parameter_or<std::string>("network_interface", "")),
         controller_switch_client_(
@@ -86,6 +88,7 @@ public:
     std::cout << "  LB+A: Switch to RL controller" << std::endl;
     std::cout << "  LB+B: Switch to Static controller" << std::endl;
     std::cout << "  LB+Y: Switch to Joint State Broadcaster only" << std::endl;
+    std::cout << "  RB+Y: Toggle cmd_vel publishing (Nav2 mode)" << std::endl;
     std::cout << "----------------------------------------------------"
               << std::endl;
 
@@ -98,7 +101,9 @@ public:
           -cmd_vel_scale_.lin_vel_y * low_state_subscriber_->joystick.lx();
       cmd_vel_msg_.angular.z =
           -cmd_vel_scale_.ang_vel_z * low_state_subscriber_->joystick.rx();
-      cmd_vel_pub_->publish(cmd_vel_msg_);
+      if (publish_cmd_vel_) {
+        cmd_vel_pub_->publish(cmd_vel_msg_);
+      }
 
       handle_controller_switch();
       rate.sleep();
@@ -130,6 +135,12 @@ private:
                low_state_subscriber_->joystick.LB.pressed) {
       set_controller_switch({}, {"rl_controller", "static_controller"},
                             "Switched to Joint State Broadcaster only.");
+    } else if (low_state_subscriber_->joystick.Y.on_pressed &&
+               low_state_subscriber_->joystick.RB.pressed &&
+               !low_state_subscriber_->joystick.LB.pressed) {
+      publish_cmd_vel_ = !publish_cmd_vel_;
+      RCLCPP_INFO(node_->get_logger(), "cmd_vel publishing %s.",
+                  publish_cmd_vel_ ? "enabled" : "disabled");
     } else if (low_state_subscriber_->joystick.X.on_pressed &&
                low_state_subscriber_->joystick.LB.pressed) {
       jump_cmd_msg_.data = true;
@@ -178,6 +189,7 @@ private:
     float lin_vel_y = 1.0;
     float ang_vel_z = 1.0;
   } cmd_vel_scale_;
+  bool publish_cmd_vel_ = true;
   std::string unitree_net_if_;
   std::shared_ptr<UnitreeSubscriberType> low_state_subscriber_;
   rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedPtr
