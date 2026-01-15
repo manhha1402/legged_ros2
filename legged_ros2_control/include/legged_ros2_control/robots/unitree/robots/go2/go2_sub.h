@@ -3,39 +3,36 @@
 
 #pragma once
 
+#include "legged_ros2_control/robots/unitree/dds_wrapper/common/Subscription.h"
 #include <algorithm>
 #include <unordered_map>
-#include "legged_ros2_control/robots/unitree/dds_wrapper/common/Subscription.h"
 
 #include <unitree/idl/go2/LowCmd_.hpp>
 #include <unitree/idl/go2/LowState_.hpp>
 
+namespace unitree {
+namespace robot {
+namespace go2 {
 
-namespace unitree
-{
-namespace robot
-{
-namespace go2
-{ 
-
-class LowStateSubscriber : public SubscriptionBase<unitree_go::msg::dds_::LowState_>
-{
+class LowStateSubscriber
+    : public SubscriptionBase<unitree_go::msg::dds_::LowState_> {
 public:
   using SharedPtr = std::shared_ptr<LowStateSubscriber>;
 
-  LowStateSubscriber(std::string topic = "rt/lowstate") : SubscriptionBase<MsgType>(topic) {}
+  LowStateSubscriber(std::string topic = "rt/lowstate")
+      : SubscriptionBase<MsgType>(topic) {}
 
-  void update() override
-  {
+  void update() override {
     std::lock_guard<std::mutex> lock(mutex_);
     // ********** Joystick ********** //
-    // Check if all joystick values are zero to determine if the joystick is inactive
-    if(std::all_of(msg_.wireless_remote().begin(), msg_.wireless_remote().end(), [](uint8_t i){return i == 0;}))
-    {
+    // Check if all joystick values are zero to determine if the joystick is
+    // inactive
+    if (std::all_of(msg_.wireless_remote().begin(),
+                    msg_.wireless_remote().end(),
+                    [](uint8_t i) { return i == 0; })) {
       auto now = std::chrono::system_clock::now();
       auto elasped_time = now - last_joystick_time_;
-      if(elasped_time > std::chrono::milliseconds(joystick_timeout_ms_))
-      {
+      if (elasped_time > std::chrono::milliseconds(joystick_timeout_ms_)) {
         isJoystickTimeout_ = true;
       }
     } else {
@@ -68,14 +65,13 @@ public:
     joystick.ry(key.RF_RX.ry);
   }
 
-  bool isJoystickTimeout() const  { return isJoystickTimeout_; }
+  bool isJoystickTimeout() const { return isJoystickTimeout_; }
 
 private:
   uint32_t joystick_timeout_ms_ = 3000;
   bool isJoystickTimeout_ = false;
   std::chrono::time_point<std::chrono::system_clock> last_joystick_time_;
 };
-
 
 } // namespace go2
 } // namespace robot

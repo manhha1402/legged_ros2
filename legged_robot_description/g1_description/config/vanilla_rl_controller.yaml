@@ -3,9 +3,9 @@ unitree_node:
     cmd_vel:
       publish: true
       scale:
-        lin_vel_x: 0.5
-        lin_vel_y: 0.5
-        ang_vel_z: 0.5
+        lin_vel_x: 0.3
+        lin_vel_y: 0.3
+        ang_vel_z: 0.3
 
 # ------------------------------------------------------------
 # The following configurations are for the ROS 2 controller

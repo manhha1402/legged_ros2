@@ -88,7 +88,8 @@ public:
     std::cout << "  LB+A: Switch to RL controller" << std::endl;
     std::cout << "  LB+B: Switch to Static controller" << std::endl;
     std::cout << "  LB+Y: Switch to Joint State Broadcaster only" << std::endl;
-    std::cout << "  RB+Y: Toggle cmd_vel publishing (Nav2 mode)" << std::endl;
+    std::cout << "  RB+Y: Toggle cmd_vel publishing (navigation mode)"
+              << std::endl;
     std::cout << "----------------------------------------------------"
               << std::endl;
 

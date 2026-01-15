@@ -1,46 +1,48 @@
 /**
  * @file go2_system_interface.hpp
  * @author xiaobaige (zitongbai@outlook.com)
- * @brief 
+ * @brief
  * @version 0.1
  * @date 2025-08-12
- * 
+ *
  * @copyright Copyright (c) 2025
- * 
+ *
  */
 
 #pragma once
 
+#include "rclcpp_lifecycle/state.hpp"
 #include <map>
 #include <mutex>
-#include "rclcpp_lifecycle/state.hpp"
 
 #include "legged_ros2_control/legged_system_interface.hpp"
 #include "legged_ros2_control/visibility_control.h"
 
+#include "legged_ros2_control/robots/unitree/robots/go2/define.h"
 #include "legged_ros2_control/robots/unitree/robots/go2/go2_pub.h"
 #include "legged_ros2_control/robots/unitree/robots/go2/go2_sub.h"
-#include "legged_ros2_control/robots/unitree/robots/go2/define.h"
-
 
 namespace legged {
 
 using namespace unitree::common;
 using namespace unitree::robot;
 
-class HARDWARE_INTERFACE_PUBLIC Go2SystemInterface : public LeggedSystemInterface
-{
+class HARDWARE_INTERFACE_PUBLIC Go2SystemInterface
+    : public LeggedSystemInterface {
 public:
   RCLCPP_SHARED_PTR_DEFINITIONS(Go2SystemInterface)
   RCLCPP_UNIQUE_PTR_DEFINITIONS(Go2SystemInterface)
 
-  CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
+  CallbackReturn on_init(const hardware_interface::HardwareInfo &info) override;
 
-  CallbackReturn on_configure(const rclcpp_lifecycle::State & previous_state) override;
+  CallbackReturn
+  on_configure(const rclcpp_lifecycle::State &previous_state) override;
 
-  return_type read(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  return_type read(const rclcpp::Time &time,
+                   const rclcpp::Duration &period) override;
 
-  return_type write(const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  return_type write(const rclcpp::Time &time,
+                    const rclcpp::Duration &period) override;
 
   static const std::string TOPIC_LOWCMD;
   static const std::string TOPIC_LOWSTATE;
@@ -54,9 +56,6 @@ protected:
   std::unique_ptr<go2::LowStateSubscriber> lowstate_subscriber_;
 
   bool enable_lowlevel_write_ = false; // if true, do not write lowcmd to robot
-
 };
 
-
-}
-
+} // namespace legged
