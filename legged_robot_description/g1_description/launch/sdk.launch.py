@@ -29,7 +29,7 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "rl_policy", 
-            default_value="policy_27.onnx",
+            default_value="policy_12.onnx",
             description="RL policy file. This file is exported by IsaacLab automatically \
                         when playing the policy. Use policy_27.onnx for 27-joint whole-body control.",
         )
@@ -37,8 +37,8 @@ def generate_launch_description():
     declared_arguments.append(
         DeclareLaunchArgument(
             "controller_config", 
-            default_value="vanilla_rl_controller.yaml",
-            description="Controller configuration file. Use vanilla_rl_controller.yaml for \
+            default_value="rl_arm_controller.yaml",
+            description="Controller configuration file. Use rl_arm_controller.yaml for \
                         27-joint whole-body RL control.",
         )
     )
@@ -182,18 +182,18 @@ def generate_launch_description():
         arguments=["rl_controller", "-c", "/controller_manager", "--inactive"],
     )
 
-    # NOTE: Arm trajectory controllers are only available when using legs_rl_arms_trajectory.yaml
+    # NOTE: Arm trajectory controllers are only available when using rl_arm_controller.yaml
     # with a legs-only policy (e.g., policy_12.onnx with matching observation config)
-    # left_arm_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["left_arm_controller", "-c", "/controller_manager"],
-    # )
-    # right_arm_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["right_arm_controller", "-c", "/controller_manager"],
-    # )
+    left_arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["left_arm_controller", "-c", "/controller_manager"],
+    )
+    right_arm_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["right_arm_controller", "-c", "/controller_manager"],
+    )
 
     rqt_controller_manager = Node(
         package="rqt_controller_manager",
@@ -230,6 +230,19 @@ def generate_launch_description():
         )
     )
     
+    delay_left_arm_after_rl = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=rl_controller_spawner,
+            on_exit=[left_arm_controller_spawner],
+        )
+    )
+    delay_right_arm_after_rl = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=rl_controller_spawner,
+            on_exit=[right_arm_controller_spawner],
+        )
+    )
+
     # Delay rviz start after `joint_state_broadcaster`
     delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -245,8 +258,10 @@ def generate_launch_description():
         delay_joint_state_after_static,
         delay_imu_after_joint_state,
         delay_rl_after_imu,
+        delay_left_arm_after_rl,
+        delay_right_arm_after_rl,
         delay_rviz_after_joint_state_broadcaster_spawner,
-        # rqt_controller_manager,
+        rqt_controller_manager,
         # rqt_robot_steering
     ]
 
@@ -266,7 +281,7 @@ def generate_launch_description():
     
     return LaunchDescription(
         declared_arguments + 
-        [OpaqueFunction(function=setup_cyclonedds)] + 
+        # [OpaqueFunction(function=setup_cyclonedds)] + 
         nodes
     )
 

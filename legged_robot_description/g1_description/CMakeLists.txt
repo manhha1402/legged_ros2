@@ -12,12 +12,9 @@ find_package(rclcpp REQUIRED)
 find_package(rclpy REQUIRED)
 
 install(
-  DIRECTORY config launch meshes urdf mjcf rviz2
+  DIRECTORY config launch urdf rviz
   DESTINATION share/${PROJECT_NAME}
 )
-
-# Install Python modules
-ament_python_install_package(${PROJECT_NAME})
 
 # Install Python executables
 install(PROGRAMS
