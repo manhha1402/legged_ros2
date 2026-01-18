@@ -14,7 +14,9 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     static_controller:
       type: legged_ros2_controller/StaticController
-    rl_controller:
+    rl_controller_legs:
+      type: legged_rl_controller/LeggedRLController
+    rl_controller_whole:
       type: legged_rl_controller/LeggedRLController
     imu_sensor_broadcaster:
       type: imu_sensor_broadcaster/IMUSensorBroadcaster
@@ -31,35 +33,67 @@ static_controller:
     joint_names: &joint_names_list
       - left_hip_pitch_joint
       - right_hip_pitch_joint
+      - waist_yaw_joint
       - left_hip_roll_joint
       - right_hip_roll_joint
+      - left_shoulder_pitch_joint
+      - right_shoulder_pitch_joint
       - left_hip_yaw_joint
       - right_hip_yaw_joint
+      - left_shoulder_roll_joint
+      - right_shoulder_roll_joint
       - left_knee_joint
       - right_knee_joint
+      - left_shoulder_yaw_joint
+      - right_shoulder_yaw_joint
       - left_ankle_pitch_joint
       - right_ankle_pitch_joint
+      - left_elbow_joint
+      - right_elbow_joint
       - left_ankle_roll_joint
       - right_ankle_roll_joint
+      - left_wrist_roll_joint
+      - right_wrist_roll_joint
+      - left_wrist_pitch_joint
+      - right_wrist_pitch_joint
+      - left_wrist_yaw_joint
+      - right_wrist_yaw_joint
     joint_cfg:
       left_hip_pitch_joint: { kp: 100.0, kd: 2.0, default_pos: -0.1 }
       right_hip_pitch_joint: { kp: 100.0, kd: 2.0, default_pos: -0.1 }
+      waist_yaw_joint: { kp: 200.0, kd: 5.0, default_pos: 0.0 }
       left_hip_roll_joint: { kp: 100.0, kd: 2.0, default_pos: 0.0 }
       right_hip_roll_joint: { kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      left_shoulder_pitch_joint: { kp: 40.0, kd: 10.0, default_pos: 0.3 }
+      right_shoulder_pitch_joint: { kp: 40.0, kd: 10.0, default_pos: 0.3 }
       left_hip_yaw_joint: { kp: 100.0, kd: 2.0, default_pos: 0.0 }
       right_hip_yaw_joint: { kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      left_shoulder_roll_joint: { kp: 40.0, kd: 10.0, default_pos: 0.25 }
+      right_shoulder_roll_joint: { kp: 40.0, kd: 10.0, default_pos: -0.25 }
       left_knee_joint: { kp: 150.0, kd: 4.0, default_pos: 0.3 }
       right_knee_joint: { kp: 150.0, kd: 4.0, default_pos: 0.3 }
+      left_shoulder_yaw_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_shoulder_yaw_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
       left_ankle_pitch_joint: { kp: 40.0, kd: 2.0, default_pos: -0.2 }
       right_ankle_pitch_joint: { kp: 40.0, kd: 2.0, default_pos: -0.2 }
+      left_elbow_joint: { kp: 40.0, kd: 10.0, default_pos: 0.97 }
+      right_elbow_joint: { kp: 40.0, kd: 10.0, default_pos: 0.97 }
       left_ankle_roll_joint: { kp: 40.0, kd: 2.0, default_pos: 0.0 }
       right_ankle_roll_joint: { kp: 40.0, kd: 2.0, default_pos: 0.0 }
+      left_wrist_roll_joint: { kp: 40.0, kd: 10.0, default_pos: 0.15 }
+      right_wrist_roll_joint: { kp: 40.0, kd: 10.0, default_pos: -0.15 }
+      left_wrist_pitch_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_wrist_pitch_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      left_wrist_yaw_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_wrist_yaw_joint: { kp: 40.0, kd: 10.0, default_pos: 0.0 }
 
-# -------------
-# RL Controller
-# -------------
-rl_controller:
+# --------------------
+# RL Controller (legs)
+# --------------------
+rl_controller_legs:
   ros__parameters:
+    rl_policy_package: g1_description
+    rl_policy_path: config/rl/policy_12.onnx
     update_rate: 200 # 1/0.02s
     imu_names:
       - imu-pelvis
@@ -109,6 +143,94 @@ rl_controller:
       right_ankle_pitch_joint: { kp: 40.0, kd: 2.0, default_pos: -0.2, scale: 0.25, clip: [ -100.0, 100.0 ] }
       left_ankle_roll_joint: { kp: 40.0, kd: 2.0, default_pos: 0.0, scale: 0.25, clip: [ -100.0, 100.0 ] }
       right_ankle_roll_joint: { kp: 40.0, kd: 2.0, default_pos: 0.0, scale: 0.25, clip: [ -100.0, 100.0 ] }
+
+# ---------------------------
+# RL Controller (whole body)
+# ---------------------------
+rl_controller_whole:
+  ros__parameters:
+    rl_policy_package: g1_description
+    rl_policy_path: config/rl/policy_27.onnx
+    update_rate: 50
+    imu_names:  # only use one imu for RL observation
+      - imu-pelvis # refer to ros2 control xacro file
+    range_lin_vel_x: [-1.0, 1.0]
+    range_lin_vel_y: [-1.0, 1.0]
+    range_ang_vel_z: [-1.0, 1.0]
+
+    # The following parameters are exported in legged lab, it is
+    # not recommended to change them manually.
+    obs_names:
+      - base_ang_vel
+      - projected_gravity
+      - velocity_commands
+      - joint_pos
+      - joint_vel
+      - actions
+    obs_cfg:
+      base_ang_vel: { clip: [ -100.0, 100.0 ], scale: 0.20000000298023224, history_length: 5 }
+      projected_gravity: { clip: [ -100.0, 100.0 ], scale: 1.0, history_length: 5 }
+      velocity_commands: { clip: [ -100.0, 100.0 ], scale: 1.0, history_length: 5 }
+      joint_pos: { clip: [ -100.0, 100.0 ], scale: 1.0, history_length: 5 }
+      joint_vel: { clip: [ -100.0, 100.0 ], scale: 0.05000000074505806, history_length: 5 }
+      actions: { clip: [ -100.0, 100.0 ], scale: 1.0, history_length: 5 }
+
+    joint_names:
+      - left_hip_pitch_joint
+      - right_hip_pitch_joint
+      - waist_yaw_joint
+      - left_hip_roll_joint
+      - right_hip_roll_joint
+      - left_shoulder_pitch_joint
+      - right_shoulder_pitch_joint
+      - left_hip_yaw_joint
+      - right_hip_yaw_joint
+      - left_shoulder_roll_joint
+      - right_shoulder_roll_joint
+      - left_knee_joint
+      - right_knee_joint
+      - left_shoulder_yaw_joint
+      - right_shoulder_yaw_joint
+      - left_ankle_pitch_joint
+      - right_ankle_pitch_joint
+      - left_elbow_joint
+      - right_elbow_joint
+      - left_ankle_roll_joint
+      - right_ankle_roll_joint
+      - left_wrist_roll_joint
+      - right_wrist_roll_joint
+      - left_wrist_pitch_joint
+      - right_wrist_pitch_joint
+      - left_wrist_yaw_joint
+      - right_wrist_yaw_joint
+    action_cfg:
+      left_hip_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: -0.10000000149011612 }
+      right_hip_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: -0.10000000149011612 }
+      waist_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 200.0, kd: 5.0, default_pos: 0.0 }
+      left_hip_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      right_hip_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      left_shoulder_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.30000001192092896 }
+      right_shoulder_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.30000001192092896 }
+      left_hip_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      right_hip_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 100.0, kd: 2.0, default_pos: 0.0 }
+      left_shoulder_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.25 }
+      right_shoulder_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: -0.25 }
+      left_knee_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 150.0, kd: 4.0, default_pos: 0.30000001192092896 }
+      right_knee_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 150.0, kd: 4.0, default_pos: 0.30000001192092896 }
+      left_shoulder_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_shoulder_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      left_ankle_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 2.0, default_pos: -0.20000000298023224 }
+      right_ankle_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 2.0, default_pos: -0.20000000298023224 }
+      left_elbow_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.9700000286102295 }
+      right_elbow_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.9700000286102295 }
+      left_ankle_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 2.0, default_pos: 0.0 }
+      right_ankle_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 2.0, default_pos: 0.0 }
+      left_wrist_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.15000000596046448 }
+      right_wrist_roll_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: -0.15000000596046448 }
+      left_wrist_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_wrist_pitch_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      left_wrist_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
+      right_wrist_yaw_joint: { clip: [ -100.0, 100.0 ], scale: 0.25, kp: 40.0, kd: 10.0, default_pos: 0.0 }
 
 # Left arm trajectory controller (7 joints) - provides action server
 left_arm_controller:

@@ -10,7 +10,10 @@
  */
 
 #include "legged_rl_controller/legged_rl_controller.hpp"
+#include <filesystem>
 #include <regex>
+
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 #include "legged_rl_controller/isaaclab/envs/mdp/actions/joint_actions.h"
 #include "legged_rl_controller/isaaclab/envs/mdp/observations.h"
@@ -37,6 +40,8 @@ controller_interface::CallbackReturn LeggedRLController::on_init() {
 
   rl_policy_path_ = auto_declare<std::string>(
       "rl_policy_path", ""); // This parameter is set in launch file
+  rl_policy_package_ =
+      auto_declare<std::string>("rl_policy_package", "g1_description");
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
@@ -188,6 +193,22 @@ LeggedRLController::configure_parameters_() {
     RCLCPP_WARN(
         get_node()->get_logger(),
         "Multiple IMUs detected, using the first one for RL observations.");
+  }
+
+  if (!rl_policy_path_.empty() &&
+      !std::filesystem::path(rl_policy_path_).is_absolute()) {
+    try {
+      const auto pkg_share =
+          ament_index_cpp::get_package_share_directory(rl_policy_package_);
+      rl_policy_path_ = (std::filesystem::path(pkg_share) / rl_policy_path_)
+                            .lexically_normal()
+                            .string();
+    } catch (const std::exception &e) {
+      RCLCPP_WARN(get_node()->get_logger(),
+                  "Failed to resolve rl_policy_path relative to package '%s': "
+                  "%s",
+                  rl_policy_package_.c_str(), e.what());
+    }
   }
 
   env_cfg_.policy_net_path = rl_policy_path_;

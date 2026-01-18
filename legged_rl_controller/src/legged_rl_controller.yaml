@@ -1,4 +1,14 @@
 legged_rl_controller:
+  rl_policy_path: {
+    type: string,
+    default_value: "",
+    description: "Policy file path. If relative, resolved against rl_policy_package."
+  }
+  rl_policy_package: {
+    type: string,
+    default_value: "g1_description",
+    description: "Package used to resolve relative rl_policy_path."
+  }
   control_rate: {
     type: int,
     default_value: 50,

@@ -85,7 +85,10 @@ public:
     std::cout << "----------------------------------------------------"
               << std::endl;
     std::cout << "Joystick Operation Instructions:" << std::endl;
-    std::cout << "  LB+A: Switch to RL controller" << std::endl;
+    std::cout << "  LB+A: Switch to RL whole-body controller (policy_27)"
+              << std::endl;
+    std::cout << "  LB+X: Switch to RL legs controller (policy_12)"
+              << std::endl;
     std::cout << "  LB+B: Switch to Static controller" << std::endl;
     std::cout << "  LB+Y: Switch to Joint State Broadcaster only" << std::endl;
     std::cout << "  RB+Y: Toggle cmd_vel publishing (navigation mode)"
@@ -126,15 +129,29 @@ private:
   void handle_controller_switch() {
     if (low_state_subscriber_->joystick.A.on_pressed &&
         low_state_subscriber_->joystick.LB.pressed) {
-      set_controller_switch({"rl_controller"}, {"static_controller"},
-                            "Switched to RL controller.");
+      set_controller_switch(
+          {"rl_controller_whole"},
+          {"rl_controller_legs", "static_controller", "left_arm_controller",
+           "right_arm_controller"},
+          "Switched to RL whole-body controller (policy_27).");
+    } else if (low_state_subscriber_->joystick.X.on_pressed &&
+               low_state_subscriber_->joystick.LB.pressed) {
+      set_controller_switch(
+          {"rl_controller_legs", "left_arm_controller", "right_arm_controller"},
+          {"rl_controller_whole", "static_controller"},
+          "Switched to RL legs controller (policy_12).");
     } else if (low_state_subscriber_->joystick.B.on_pressed &&
                low_state_subscriber_->joystick.LB.pressed) {
-      set_controller_switch({"static_controller"}, {"rl_controller"},
+      set_controller_switch({"static_controller"},
+                            {"rl_controller_legs", "rl_controller_whole",
+                             "left_arm_controller", "right_arm_controller"},
                             "Switched to Static controller.");
     } else if (low_state_subscriber_->joystick.Y.on_pressed &&
                low_state_subscriber_->joystick.LB.pressed) {
-      set_controller_switch({}, {"rl_controller", "static_controller"},
+      set_controller_switch({},
+                            {"rl_controller_legs", "rl_controller_whole",
+                             "static_controller", "left_arm_controller",
+                             "right_arm_controller"},
                             "Switched to Joint State Broadcaster only.");
     } else if (low_state_subscriber_->joystick.Y.on_pressed &&
                low_state_subscriber_->joystick.RB.pressed &&

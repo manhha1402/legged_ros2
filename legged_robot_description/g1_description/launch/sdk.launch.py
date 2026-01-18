@@ -28,14 +28,6 @@ def generate_launch_description():
     )
     declared_arguments.append(
         DeclareLaunchArgument(
-            "rl_policy", 
-            default_value="policy_12.onnx",
-            description="RL policy file. This file is exported by IsaacLab automatically \
-                        when playing the policy. Use policy_27.onnx for 27-joint whole-body control.",
-        )
-    )
-    declared_arguments.append(
-        DeclareLaunchArgument(
             "controller_config", 
             default_value="rl_arm_controller.yaml",
             description="Controller configuration file. Use rl_arm_controller.yaml for \
@@ -84,7 +76,6 @@ def generate_launch_description():
     # Initialize Arguments
     description_package = LaunchConfiguration("description_package")
     description_file = LaunchConfiguration("description_file")
-    rl_policy = LaunchConfiguration("rl_policy")
     controller_config = LaunchConfiguration("controller_config")
     use_rviz = LaunchConfiguration("use_rviz")
     use_rqt_cm = LaunchConfiguration("use_rqt_cm")
@@ -110,11 +101,6 @@ def generate_launch_description():
     )
     robot_description = {"robot_description": robot_description_content}
 
-    rl_policy_path = {
-        "rl_policy_path": PathJoinSubstitution(
-            [FindPackageShare(description_package), "config", "rl", rl_policy]
-        )
-    }
 
     controller_params = {
         "network_interface": network_interface,
@@ -135,7 +121,7 @@ def generate_launch_description():
     control_node = Node(
         package="legged_ros2_control",
         executable="g1_node",
-        parameters=[controller_config_path, robot_description, rl_policy_path, controller_params],
+        parameters=[controller_config_path, robot_description, controller_params],
         remappings=[
             ("~/robot_description", "/robot_description"),
         ],
@@ -176,10 +162,26 @@ def generate_launch_description():
         arguments=["static_controller", "-c", "/controller_manager", "--inactive"],
     )
 
-    rl_controller_spawner = Node(
+    rl_controller_legs_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["rl_controller", "-c", "/controller_manager", "--inactive"],
+        arguments=[
+            "rl_controller_legs",
+            "-c",
+            "/controller_manager",
+            "--inactive",
+        ],
+    )
+
+    rl_controller_whole_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=[
+            "rl_controller_whole",
+            "-c",
+            "/controller_manager",
+            "--inactive",
+        ],
     )
 
     # NOTE: Arm trajectory controllers are only available when using rl_arm_controller.yaml
@@ -207,7 +209,8 @@ def generate_launch_description():
     # )
 
     # Chain spawners sequentially to avoid CycloneDDS participant exhaustion
-    # static_controller -> joint_state_broadcaster -> imu_sensor_broadcaster -> rl_controller
+    # static_controller -> joint_state_broadcaster -> imu_sensor_broadcaster
+    # -> rl_controller_legs -> rl_controller_whole
     
     delay_joint_state_after_static = RegisterEventHandler(
         event_handler=OnProcessExit(
@@ -223,22 +226,29 @@ def generate_launch_description():
         )
     )
     
-    delay_rl_after_imu = RegisterEventHandler(
+    delay_rl_legs_after_imu = RegisterEventHandler(
         event_handler=OnProcessExit(
             target_action=imu_sensor_broadcaster_spawner,
-            on_exit=[rl_controller_spawner],
+            on_exit=[rl_controller_legs_spawner],
+        )
+    )
+
+    delay_rl_whole_after_legs = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=rl_controller_legs_spawner,
+            on_exit=[rl_controller_whole_spawner],
         )
     )
     
     delay_left_arm_after_rl = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=rl_controller_spawner,
+            target_action=rl_controller_whole_spawner,
             on_exit=[left_arm_controller_spawner],
         )
     )
     delay_right_arm_after_rl = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=rl_controller_spawner,
+            target_action=rl_controller_whole_spawner,
             on_exit=[right_arm_controller_spawner],
         )
     )
@@ -257,7 +267,8 @@ def generate_launch_description():
         static_controller_spawner,
         delay_joint_state_after_static,
         delay_imu_after_joint_state,
-        delay_rl_after_imu,
+        delay_rl_legs_after_imu,
+        delay_rl_whole_after_legs,
         delay_left_arm_after_rl,
         delay_right_arm_after_rl,
         delay_rviz_after_joint_state_broadcaster_spawner,
