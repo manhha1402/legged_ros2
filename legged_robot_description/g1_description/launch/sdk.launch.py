@@ -31,7 +31,7 @@ def generate_launch_description():
             "controller_config", 
             default_value="rl_arm_controller.yaml",
             description="Controller configuration file. Use rl_arm_controller.yaml for \
-                        27-joint whole-body RL control.",
+                ros2 launch g1_description sdk.launch.py        27-joint whole-body RL control.",
         )
     )
     declared_arguments.append(
