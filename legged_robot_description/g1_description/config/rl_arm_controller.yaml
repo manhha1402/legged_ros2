@@ -97,7 +97,7 @@ rl_controller_legs:
     update_rate: 200 # 1/0.02s
     imu_names:
       - imu-pelvis
-    range_lin_vel_x: [-0.5, 1.0]
+    range_lin_vel_x: [-0.5, 0.5]
     range_lin_vel_y: [-0.3, 0.3]
     range_ang_vel_z: [-0.2, 0.2]
 
