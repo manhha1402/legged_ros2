@@ -67,10 +67,10 @@
       <site name="imu_in_pelvis" size="0.01" pos="0.04525 0 -0.08339"/>
       <!-- LiDAR site for simulated LiDAR sensor - positioned above robot -->
       <!-- quat="0 0 1 0" is 180° around Z, required for mujoco_lidar coordinate convention -->
-      <site name="lidar" pos="0 0 0.44" quat="0 0 1 0" rgba="0 1 0 1" size="0.01" group="5"/>
+      <site name="lidar" pos="-0.004 0 0.43" quat="0 0 1 0" rgba="0 1 0 1" size="0.01" group="5"/>
       <!-- IMU at LiDAR location - offset from lidar by inverse of extrinsic_T: [-0.011, -0.02329, 0.04412] -->
-      <!-- Position = lidar_pos + inverse(extrinsic_T) = [0, 0, 0.44] + [0.011, 0.02329, -0.04412] -->
-      <site name="imu_in_lidar" size="0.01" pos="0.011 0.02329 0.39588"/>
+      <!-- Position = lidar_pos + inverse(extrinsic_T) = [-0.004, 0, 0.43] + [0.011, 0.02329, -0.04412] -->
+      <site name="imu_in_lidar" size="0.01" pos="0.007 0.02329 0.38588"/>
       <body name="left_hip_pitch_link" pos="0 0.064452 -0.1027">
         <inertial pos="0.002741 0.047791 -0.02606" quat="0.954862 0.293964 0.0302556 0.030122" mass="1.35" diaginertia="0.00181517 0.00153422 0.00116212"/>
         <joint name="left_hip_pitch_joint" pos="0 0 0" axis="0 1 0" range="-2.5307 2.8798" actuatorfrcrange="-88 88" class="leg_motor"/>

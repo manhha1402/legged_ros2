@@ -272,7 +272,7 @@ def generate_launch_description():
         delay_left_arm_after_rl,
         delay_right_arm_after_rl,
         delay_rviz_after_joint_state_broadcaster_spawner,
-        rqt_controller_manager,
+        # rqt_controller_manager,
         # rqt_robot_steering
     ]
 
