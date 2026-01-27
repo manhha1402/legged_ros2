@@ -457,7 +457,7 @@
       <material name="white"/>
     </visual>
   </link>
-  <joint name="${prefix}waist_roll_joint" type="fixed">
+  <joint name="${prefix}waist_roll_joint" type="revolute">
     <origin xyz="-0.0039635 0 0.044" rpy="0 0 0"/>
     <parent link="${prefix}waist_yaw_link"/>
     <child link="${prefix}waist_roll_link"/>
@@ -484,7 +484,7 @@
       </geometry>
     </collision>
   </link>
-  <joint name="${prefix}waist_pitch_joint" type="fixed">
+  <joint name="${prefix}waist_pitch_joint" type="revolute">
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <parent link="${prefix}waist_roll_link"/>
     <child link="${prefix}torso_link"/>

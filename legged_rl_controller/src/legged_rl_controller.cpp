@@ -68,8 +68,15 @@ controller_interface::CallbackReturn LeggedRLController::on_configure(
       });
 
   // Assume we only have one IMU
+  bool use_gains = false;
+  get_node()->get_parameter("use_gains", use_gains);
+
   robot_ = std::make_shared<LeggedArticulation>(
-      imu_interfaces_[0], joint_interface_, cmd_vel_buffer_);
+      get_node(),
+      !use_gains, // use_sim = true if use_gains is false
+      use_gains ? imu_interfaces_[0] : nullptr,
+      joint_interface_,
+      cmd_vel_buffer_);
   env_ = std::make_unique<isaaclab::ManagerBasedRLEnv>(std::move(env_cfg_),
                                                        robot_);
 
@@ -147,28 +154,14 @@ LeggedRLController::update(const rclcpp::Time & /*time*/,
 }
 
 bool LeggedRLController::detect_fall_() {
-  // Check if the robot is falling based on IMU data
-  if (imu_interfaces_.empty()) {
-    RCLCPP_ERROR(get_node()->get_logger(),
-                 "No IMU interfaces found for fall detection.");
-    return false;
-  }
+  bool use_gains = false; get_node()->get_parameter("use_gains", use_gains);
+  if (!use_gains) return false;
 
-  auto quat = imu_interfaces_[0]->get_orientation(); // (x,y,z,w)
-  double x = quat[0];
-  double y = quat[1];
-  double z = quat[2];
-  double w = quat[3];
-
-  double roll, pitch;
-  // Convert quaternion to Euler angles
-  roll = atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
-  pitch = asin(2 * (w * y - z * x));
-
-  // Check if robot is falling
-  double roll_pitch_threshold = M_PI / 3; // 60 degrees
-  return fabs(roll) > roll_pitch_threshold ||
-         fabs(pitch) > roll_pitch_threshold;
+  if (imu_interfaces_.empty()) return false;
+  auto quat = imu_interfaces_[0]->get_orientation();
+  double roll = atan2(2 * (quat[3] * quat[0] + quat[1] * quat[2]), 1 - 2 * (quat[0] * quat[0] + quat[1] * quat[1]));
+  double pitch = asin(2 * (quat[3] * quat[1] - quat[2] * quat[0]));
+  return fabs(roll) > M_PI/3 || fabs(pitch) > M_PI/3;
 }
 
 /*********************************************************************

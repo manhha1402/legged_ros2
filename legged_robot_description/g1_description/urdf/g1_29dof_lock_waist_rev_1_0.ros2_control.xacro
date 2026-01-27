@@ -1,548 +1,83 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="g1_ros2_control" params="prefix network_interface:=lo">
+  <xacro:macro name="g1_ros2_control" params="prefix network_interface:=lo use_sim:=true">
 
-    <ros2_control name="g1_ros2_control" type="system" is_async="true">
+    <ros2_control name="g1_ros2_control" type="system">
       <hardware>
-        <plugin>legged_ros2_control/G1SystemInterface</plugin>
-        <param name="network_interface">${network_interface}</param>
+        <xacro:if value="${use_sim}">
+          <!-- Mode Isaac Sim -->
+          <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+          <param name="joint_commands_topic">/joint_commands</param>
+          <param name="joint_states_topic">/joint_states</param>
+          <param name="imu_sensor_topic">/imu</param>
+        </xacro:if>
+        <xacro:unless value="${use_sim}">
+          <!-- Mode Mujoco and Real Robot -->
+          <plugin>legged_ros2_control/G1SystemInterface</plugin>
+          <param name="network_interface">${network_interface}</param>
+        </xacro:unless>
       </hardware>
-      <joint name="${prefix}left_hip_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-2.5307</param>
-          <param name="max">2.8798</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-32.0</param>
-          <param name="max">32.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-88.0</param>
-          <param name="max">88.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_hip_roll_joint">
-        <command_interface name="position">
-          <param name="min">-0.5236</param>
-          <param name="max">2.9671</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-20.0</param>
-          <param name="max">20.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-139.0</param>
-          <param name="max">139.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_hip_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-2.7576</param>
-          <param name="max">2.7576</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-32.0</param>
-          <param name="max">32.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-88.0</param>
-          <param name="max">88.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_knee_joint">
-        <command_interface name="position">
-          <param name="min">-0.087267</param>
-          <param name="max">2.8798</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-20.0</param>
-          <param name="max">20.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-139.0</param>
-          <param name="max">139.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_ankle_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-0.87267</param>
-          <param name="max">0.5236</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-30.0</param>
-          <param name="max">30.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-35.0</param>
-          <param name="max">35.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_ankle_roll_joint">
-        <command_interface name="position">
-          <param name="min">-0.2618</param>
-          <param name="max">0.2618</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-30.0</param>
-          <param name="max">30.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-35.0</param>
-          <param name="max">35.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_hip_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-2.5307</param>
-          <param name="max">2.8798</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-32.0</param>
-          <param name="max">32.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-88.0</param>
-          <param name="max">88.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_hip_roll_joint">
-        <command_interface name="position">
-          <param name="min">-2.9671</param>
-          <param name="max">0.5236</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-20.0</param>
-          <param name="max">20.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-139.0</param>
-          <param name="max">139.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_hip_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-2.7576</param>
-          <param name="max">2.7576</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-32.0</param>
-          <param name="max">32.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-88.0</param>
-          <param name="max">88.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_knee_joint">
-        <command_interface name="position">
-          <param name="min">-0.087267</param>
-          <param name="max">2.8798</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-20.0</param>
-          <param name="max">20.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-139.0</param>
-          <param name="max">139.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_ankle_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-0.87267</param>
-          <param name="max">0.5236</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-30.0</param>
-          <param name="max">30.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-35.0</param>
-          <param name="max">35.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_ankle_roll_joint">
-        <command_interface name="position">
-          <param name="min">-0.2618</param>
-          <param name="max">0.2618</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-30.0</param>
-          <param name="max">30.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-35.0</param>
-          <param name="max">35.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}waist_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-2.618</param>
-          <param name="max">2.618</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-32.0</param>
-          <param name="max">32.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-88.0</param>
-          <param name="max">88.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_shoulder_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-3.0892</param>
-          <param name="max">2.6704</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_shoulder_roll_joint">
-        <command_interface name="position">
-          <param name="min">-1.5882</param>
-          <param name="max">2.2515</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_shoulder_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-2.618</param>
-          <param name="max">2.618</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_elbow_joint">
-        <command_interface name="position">
-          <param name="min">-1.0472</param>
-          <param name="max">2.0944</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_wrist_roll_joint">
-        <command_interface name="position">
-          <param name="min">-1.972222054</param>
-          <param name="max">1.972222054</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_wrist_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-1.614429558</param>
-          <param name="max">1.614429558</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-22.0</param>
-          <param name="max">22.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-5.0</param>
-          <param name="max">5.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}left_wrist_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-1.614429558</param>
-          <param name="max">1.614429558</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-22.0</param>
-          <param name="max">22.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-5.0</param>
-          <param name="max">5.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_shoulder_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-3.0892</param>
-          <param name="max">2.6704</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_shoulder_roll_joint">
-        <command_interface name="position">
-          <param name="min">-2.2515</param>
-          <param name="max">1.5882</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_shoulder_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-2.618</param>
-          <param name="max">2.618</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_elbow_joint">
-        <command_interface name="position">
-          <param name="min">-1.0472</param>
-          <param name="max">2.0944</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_wrist_roll_joint">
-        <command_interface name="position">
-          <param name="min">-1.972222054</param>
-          <param name="max">1.972222054</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-37.0</param>
-          <param name="max">37.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-25.0</param>
-          <param name="max">25.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_wrist_pitch_joint">
-        <command_interface name="position">
-          <param name="min">-1.614429558</param>
-          <param name="max">1.614429558</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-22.0</param>
-          <param name="max">22.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-5.0</param>
-          <param name="max">5.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
-      <joint name="${prefix}right_wrist_yaw_joint">
-        <command_interface name="position">
-          <param name="min">-1.614429558</param>
-          <param name="max">1.614429558</param>
-        </command_interface>
-        <command_interface name="velocity">
-          <param name="min">-22.0</param>
-          <param name="max">22.0</param>
-        </command_interface>
-        <command_interface name="effort">
-          <param name="min">-5.0</param>
-          <param name="max">5.0</param>
-        </command_interface>
-        <state_interface name="position">
-          <param name="initial_value">0.0</param>
-        </state_interface>
-        <state_interface name="velocity" />
-        <state_interface name="effort" />
-      </joint>
 
+      <xacro:macro name="g1_joint_control" params="name p_min p_max v_max e_max use_sim">
+        <joint name="${name}">
+          <command_interface name="position"><param name="min">${p_min}</param><param name="max">${p_max}</param></command_interface>
+          <command_interface name="velocity"><param name="min">-${v_max}</param><param name="max">${v_max}</param></command_interface>
+          <command_interface name="effort"><param name="min">-${e_max}</param><param name="max">${e_max}</param></command_interface>
 
+          <xacro:unless value="${use_sim}">
+            <command_interface name="kp"/>
+            <command_interface name="kd"/>
+          </xacro:unless>
 
-      
+          <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+        </joint>
+      </xacro:macro>
+
+      <xacro:g1_joint_control name="${prefix}left_hip_pitch_joint" p_min="-2.5307" p_max="2.8798" v_max="32.0" e_max="88.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_hip_roll_joint" p_min="-0.5236" p_max="2.9671" v_max="20.0" e_max="139.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_hip_yaw_joint" p_min="-2.7576" p_max="2.7576" v_max="32.0" e_max="88.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_knee_joint" p_min="-0.087267" p_max="2.8798" v_max="20.0" e_max="139.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_ankle_pitch_joint" p_min="-0.87267" p_max="0.5236" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_ankle_roll_joint" p_min="-0.2618" p_max="0.2618" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+
+      <xacro:g1_joint_control name="${prefix}right_hip_pitch_joint" p_min="-2.5307" p_max="2.8798" v_max="32.0" e_max="88.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_hip_roll_joint" p_min="-2.9671" p_max="0.5236" v_max="20.0" e_max="139.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_hip_yaw_joint" p_min="-2.7576" p_max="2.7576" v_max="32.0" e_max="88.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_knee_joint" p_min="-0.087267" p_max="2.8798" v_max="20.0" e_max="139.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_ankle_pitch_joint" p_min="-0.87267" p_max="0.5236" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_ankle_roll_joint" p_min="-0.2618" p_max="0.2618" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+
+      <xacro:g1_joint_control name="${prefix}waist_yaw_joint" p_min="-2.618" p_max="2.618" v_max="32.0" e_max="88.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}waist_roll_joint" p_min="-0.52" p_max="0.52" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}waist_pitch_joint" p_min="-0.52" p_max="0.52" v_max="30.0" e_max="35.0" use_sim="${use_sim}"/>
+
+      <xacro:g1_joint_control name="${prefix}left_shoulder_pitch_joint" p_min="-3.0892" p_max="2.6704" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_shoulder_roll_joint" p_min="-1.5882" p_max="2.2515" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_shoulder_yaw_joint" p_min="-2.618" p_max="2.618" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_elbow_joint" p_min="-1.0472" p_max="2.0944" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_wrist_roll_joint" p_min="-1.9722" p_max="1.9722" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_wrist_pitch_joint" p_min="-1.6144" p_max="1.6144" v_max="22.0" e_max="5.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}left_wrist_yaw_joint" p_min="-1.6144" p_max="1.6144" v_max="22.0" e_max="5.0" use_sim="${use_sim}"/>
+
+      <xacro:g1_joint_control name="${prefix}right_shoulder_pitch_joint" p_min="-3.0892" p_max="2.6704" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_shoulder_roll_joint" p_min="-2.2515" p_max="1.5882" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_shoulder_yaw_joint" p_min="-2.618" p_max="2.618" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_elbow_joint" p_min="-1.0472" p_max="2.0944" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_wrist_roll_joint" p_min="-1.9722" p_max="1.9722" v_max="37.0" e_max="25.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_wrist_pitch_joint" p_min="-1.6144" p_max="1.6144" v_max="22.0" e_max="5.0" use_sim="${use_sim}"/>
+      <xacro:g1_joint_control name="${prefix}right_wrist_yaw_joint" p_min="-1.6144" p_max="1.6144" v_max="22.0" e_max="5.0" use_sim="${use_sim}"/>
+
+      <xacro:unless value="${use_sim}">
         <sensor name="imu-pelvis">
-          <state_interface name="orientation.x"/>
-          <state_interface name="orientation.y"/>
-          <state_interface name="orientation.z"/>
-          <state_interface name="orientation.w"/>
-          <state_interface name="angular_velocity.x"/>
-          <state_interface name="angular_velocity.y"/>
-          <state_interface name="angular_velocity.z"/>
-          <state_interface name="linear_acceleration.x"/>
-          <state_interface name="linear_acceleration.y"/>
-          <state_interface name="linear_acceleration.z"/>
+          <state_interface name="orientation.x"/><state_interface name="orientation.y"/><state_interface name="orientation.z"/><state_interface name="orientation.w"/>
+          <state_interface name="angular_velocity.x"/><state_interface name="angular_velocity.y"/><state_interface name="angular_velocity.z"/>
+          <state_interface name="linear_acceleration.x"/><state_interface name="linear_acceleration.y"/><state_interface name="linear_acceleration.z"/>
         </sensor>
-
+      </xacro:unless>
 
     </ros2_control>
-
-
-
   </xacro:macro>
-
 </robot>
