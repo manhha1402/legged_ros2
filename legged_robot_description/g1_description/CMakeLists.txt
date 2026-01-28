@@ -19,10 +19,6 @@ install(
 # Install Python executables
 install(PROGRAMS
   scripts/pid_ref_node.py
-  DESTINATION lib/${PROJECT_NAME}
-)
-
-install(PROGRAMS
   scripts/sim_joy_teleop.py
   DESTINATION lib/${PROJECT_NAME}
 )
