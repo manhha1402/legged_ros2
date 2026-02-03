@@ -6,17 +6,19 @@
 
   <xacro:macro name="inspire_gripper" params="name parent_link use_sim use_mock_components:=false serial_port *origin">
 
-    <xacro:inspire_gripper_description prefix="${name}_" />
-    <joint name="${name}_gripper_fix_joint" type="fixed">
+    <xacro:property name="gripper_prefix" value="${name}_" />
+
+    <xacro:inspire_gripper_description prefix="${gripper_prefix}" />
+
+    <joint name="${gripper_prefix}gripper_fix_joint" type="fixed">
       <xacro:insert_block name="origin" />
       <parent link="${parent_link}" />
-      <child link="${name}_inspire_gripper_baselink" />
+      <child link="${gripper_prefix}inspire_gripper_baselink" />
     </joint>
-
 
     <xacro:inspire_gripper_ros2_control
         name="${name}"
-        prefix="${name}_"
+        prefix="${gripper_prefix}"
         use_sim="${use_sim}"
         use_mock_components="${use_mock_components}"
         serial_port="${serial_port}"

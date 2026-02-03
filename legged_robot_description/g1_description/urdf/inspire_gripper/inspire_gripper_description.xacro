@@ -3,7 +3,7 @@
   <xacro:macro name="inspire_gripper_description" params="prefix">
 
     <!-- BASE LINK -->
-    <link name="${prefix}inspire_gripper_baselink">
+    <link name="$inspire_gripper_baselink">
       <inertial>
         <origin xyz="1.5645E-05 -4.1838E-06 0.038" rpy="0 0 0" />
         <mass value="0.072633" />
@@ -25,7 +25,7 @@
     </link>
 
     <!-- LINK 1 -->
-    <link name="${prefix}inspire_gripper_link1">
+    <link name="$inspire_gripper_link1">
       <inertial>
         <origin xyz="0.0087669 0.009 0.013992" rpy="0 0 0" />
         <mass value="0.0024292" />
@@ -46,17 +46,17 @@
     </link>
 
     <!-- JOINT 1 (Main joint) -->
-    <joint name="${prefix}inspire_gripper_joint1" type="revolute">
+    <joint name="$inspire_gripper_joint1" type="revolute">
       <origin xyz="-0.04 -0.009 0.079" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_baselink" />
-      <child link="${prefix}inspire_gripper_link1" />
+      <parent link="$inspire_gripper_baselink" />
+      <child link="$inspire_gripper_link1" />
       <axis xyz="0 -1 0" />
       <limit lower="0" upper="0.82" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
     </joint>
 
     <!-- LINK 5 -->
-    <link name="${prefix}inspire_gripper_link5">
+    <link name="$inspire_gripper_link5">
       <inertial>
         <origin xyz="0.011864 0.006 0.011367" rpy="0 0 0" />
         <mass value="0.0045068" />
@@ -77,18 +77,18 @@
     </link>
 
     <!-- JOINT 5 (Mimic) -->
-    <joint name="${prefix}inspire_gripper_joint5" type="revolute">
+    <joint name="$inspire_gripper_joint5" type="revolute">
       <origin xyz="0.0223 0.003 0.035591" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_link1" />
-      <child link="${prefix}inspire_gripper_link5" />
+      <parent link="$inspire_gripper_link1" />
+      <child link="$inspire_gripper_link5" />
       <axis xyz="0 1 0" />
       <limit lower="0" upper="0.82" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
-      <mimic joint="${prefix}inspire_gripper_joint1"/>
+      <mimic joint="$inspire_gripper_joint1"/>
     </joint>
 
     <!-- LINK 2 -->
-    <link name="${prefix}inspire_gripper_link2">
+    <link name="$inspire_gripper_link2">
       <inertial>
         <origin xyz="0.0087435 0.009 0.013955" rpy="0 0 0" />
         <mass value="0.0038971" />
@@ -109,18 +109,18 @@
     </link>
 
     <!-- JOINT 2 (Mimic) -->
-    <joint name="${prefix}inspire_gripper_joint2" type="revolute">
+    <joint name="$inspire_gripper_joint2" type="revolute">
       <origin xyz="-0.03 -0.009 0.081" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_baselink" />
-      <child link="${prefix}inspire_gripper_link2" />
+      <parent link="$inspire_gripper_baselink" />
+      <child link="$inspire_gripper_link2" />
       <axis xyz="0 -1 0" />
       <limit lower="0" upper="0.82" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
-      <mimic joint="${prefix}inspire_gripper_joint1"/>
+      <mimic joint="$inspire_gripper_joint1"/>
     </joint>
 
     <!-- LINK 3 -->
-    <link name="${prefix}inspire_gripper_link3">
+    <link name="$inspire_gripper_link3">
       <inertial>
         <origin xyz="-0.0087435 0.009 0.013955" rpy="0 0 0" />
         <mass value="0.0038971" />
@@ -141,18 +141,18 @@
     </link>
 
     <!-- JOINT 3 (Mimic) -->
-    <joint name="${prefix}inspire_gripper_joint3" type="revolute">
+    <joint name="$inspire_gripper_joint3" type="revolute">
       <origin xyz="0.03 -0.009 0.081" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_baselink" />
-      <child link="${prefix}inspire_gripper_link3" />
+      <parent link="$inspire_gripper_baselink" />
+      <child link="$inspire_gripper_link3" />
       <axis xyz="0 -1 0" />
       <limit lower="-0.82" upper="0" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
-      <mimic joint="${prefix}inspire_gripper_joint1" multiplier="-1" offset="0"/>
+      <mimic joint="$inspire_gripper_joint1" multiplier="-1" offset="0"/>
     </joint>
 
     <!-- LINK 4 -->
-    <link name="${prefix}inspire_gripper_link4">
+    <link name="$inspire_gripper_link4">
       <inertial>
         <origin xyz="-0.0087669 0.009 0.013992" rpy="0 0 0" />
         <mass value="0.0024292" />
@@ -173,18 +173,18 @@
     </link>
 
     <!-- JOINT 4 (Mimic) -->
-    <joint name="${prefix}inspire_gripper_joint4" type="revolute">
+    <joint name="$inspire_gripper_joint4" type="revolute">
       <origin xyz="0.04 -0.009 0.079" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_baselink" />
-      <child link="${prefix}inspire_gripper_link4" />
+      <parent link="$inspire_gripper_baselink" />
+      <child link="$inspire_gripper_link4" />
       <axis xyz="0 -1 0" />
       <limit lower="-0.82" upper="0" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
-      <mimic joint="${prefix}inspire_gripper_joint1" multiplier="-1" offset="0"/>
+      <mimic joint="$inspire_gripper_joint1" multiplier="-1" offset="0"/>
     </joint>
 
     <!-- LINK 6 -->
-    <link name="${prefix}inspire_gripper_link6">
+    <link name="$inspire_gripper_link6">
       <inertial>
         <origin xyz="-0.011864 0.006 0.011367" rpy="0 0 0" />
         <mass value="0.0045068" />
@@ -205,23 +205,23 @@
     </link>
 
     <!-- JOINT 6 (Mimic) -->
-    <joint name="${prefix}inspire_gripper_joint6" type="revolute">
+    <joint name="$inspire_gripper_joint6" type="revolute">
       <origin xyz="-0.0223 0.003 0.035591" rpy="0 0 0" />
-      <parent link="${prefix}inspire_gripper_link4" />
-      <child link="${prefix}inspire_gripper_link6" />
+      <parent link="$inspire_gripper_link4" />
+      <child link="$inspire_gripper_link6" />
       <axis xyz="0 -1 0" />
       <limit lower="0" upper="0.82" effort="1" velocity="0.5" />
       <dynamics damping="0.1" friction="0.1"/>
-      <mimic joint="${prefix}inspire_gripper_joint1"/>
+      <mimic joint="$inspire_gripper_joint1"/>
     </joint>
 
     <!-- TRANSMISSION -->
-    <transmission name="${prefix}gripper_finger1_trans">
+    <transmission name="$gripper_finger1_trans">
       <type>transmission_interface/SimpleTransmission</type>
-      <joint name="${prefix}inspire_gripper_joint1">
+      <joint name="$inspire_gripper_joint1">
         <hardwareInterface>PositionJointInterface</hardwareInterface>
       </joint>
-      <actuator name="${prefix}gripper_finger1_motor">
+      <actuator name="$gripper_finger1_motor">
         <mechanicalReduction>1</mechanicalReduction>
         <hardwareInterface>PositionJointInterface</hardwareInterface>
       </actuator>

@@ -347,25 +347,36 @@ right_arm_controller:
 
 left_inspire_gripper_controller:
   ros__parameters:
-    joint: left_inspire_gripper_joint1
+
+    joint: inspire_gripper_joint1
+
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
+
     action_monitor_rate: 20.0
     allow_stalling: true
+    stall_velocity_threshold: 0.001
+    stall_timeout: 1.0
 
 right_inspire_gripper_controller:
   ros__parameters:
-    joint: right_inspire_gripper_joint1
+    use_sim_time: true
+
+    joint: inspire_gripper_joint1
+
     command_interfaces:
       - position
     state_interfaces:
       - position
       - velocity
+
     action_monitor_rate: 20.0
     allow_stalling: true
+    stall_velocity_threshold: 0.001
+    stall_timeout: 1.0
 
 imu_sensor_broadcaster:
   ros__parameters:

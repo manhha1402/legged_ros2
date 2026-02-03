@@ -4,7 +4,7 @@
     <xacro:macro name="inspire_gripper_ros2_control" params="
         name
         prefix
-        use_sim:=false
+        use_sim:=true
         use_mock_components:=false
         serial_port:=/dev/ttyUSB0
         baudrate:=115200
@@ -12,16 +12,28 @@
 
         <ros2_control name="${name}_gripper_hardware" type="system">
             <hardware>
-                <xacro:if value="${use_sim or use_mock_components}">
+                <!-- 1. Mode Isaac Sim: Using TopicBasedSystem -->
+                <xacro:if value="${use_sim}">
+                    <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
+                    <param name="joint_commands_topic">/${prefix}gripper_commands</param>
+                    <param name="joint_states_topic">/${prefix}gripper_states</param>
+                </xacro:if>
+
+                <!-- 2. Mode Mock -->
+                <xacro:if value="${use_mock_components and not use_sim}">
                     <plugin>mock_components/GenericSystem</plugin>
                 </xacro:if>
+
+                <!-- 3. Mode Real Hardware -->
                 <xacro:unless value="${use_sim or use_mock_components}">
                     <plugin>vm_ros2_control/InspireGripperHardwareInterface</plugin>
                     <param name="serial_port">${serial_port}</param>
                     <param name="baudrate">${baudrate}</param>
                 </xacro:unless>
             </hardware>
-            <joint name="${prefix}inspire_gripper_joint1">
+
+            <!-- Main joint (Joint 1) -->
+            <joint name="inspire_gripper_joint1">
                 <command_interface name="position" />
                 <state_interface name="position">
                     <param name="initial_value">0.0</param>
@@ -31,10 +43,11 @@
                 </state_interface>
             </joint>
 
+            <!-- Mimic Joint-->
             <xacro:if value="${use_sim or use_mock_components}">
                 <xacro:macro name="mimic_joint_hw" params="joint_num mult">
-                    <joint name="${prefix}inspire_gripper_joint${joint_num}">
-                        <param name="mimic">${prefix}inspire_gripper_joint1</param>
+                    <joint name="inspire_gripper_joint${joint_num}">
+                        <param name="mimic">inspire_gripper_joint1</param>
                         <param name="multiplier">${mult}</param>
                         <command_interface name="position" />
                         <state_interface name="position"/>
@@ -49,6 +62,7 @@
                 <xacro:mimic_joint_hw joint_num="6" mult="1"/>
             </xacro:if>
 
+            <!-- GPIO only valid on real robot -->
             <xacro:unless value="${use_sim or use_mock_components}">
                 <gpio name="${prefix}reactivate_gripper">
                     <command_interface name="reactivate_gripper_cmd" />
