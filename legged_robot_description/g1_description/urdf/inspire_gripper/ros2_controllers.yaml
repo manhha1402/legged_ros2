@@ -1,0 +1,49 @@
+#controller_manager:
+#  ros__parameters:
+#    update_rate: 500  # Hz
+#    joint_state_broadcaster:
+#      type: joint_state_broadcaster/JointStateBroadcaster
+    #inspire_gripper_controller:
+    #  type: position_controllers/GripperActionController
+    # robotiq_activation_controller:
+    #   type: robotiq_controllers/RobotiqActivationController
+
+# inspire_gripper_controller:
+#   ros__parameters:
+#     default: true
+#     joint: inspire_gripper_joint
+#     use_effort_interface: true
+#     use_speed_interface: true
+
+# robotiq_activation_controller:
+#   ros__parameters:
+#     default: true
+
+controller_manager:
+  ros__parameters:
+    left_inspire_gripper_controller:
+      type: position_controllers/GripperActionController
+    right_inspire_gripper_controller:
+      type: position_controllers/GripperActionController
+
+left_inspire_gripper_controller:
+  ros__parameters:
+    joint: left_inspire_gripper_joint1
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    action_monitor_rate: 20.0
+    allow_stalling: true
+
+right_inspire_gripper_controller:
+  ros__parameters:
+    joint: right_inspire_gripper_joint1
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    action_monitor_rate: 20.0
+    allow_stalling: true

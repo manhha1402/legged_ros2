@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find g1_description)/urdf/inspire_gripper/inspire_gripper_description.xacro" />
+  <xacro:include filename="$(find g1_description)/urdf/inspire_gripper/inspire_gripper.ros2_control.xacro" />
+
+  <xacro:macro name="inspire_gripper" params="name parent_link use_sim use_mock_components:=false serial_port *origin">
+
+    <xacro:inspire_gripper_description prefix="${name}_" />
+    <joint name="${name}_gripper_fix_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}" />
+      <child link="${name}_inspire_gripper_baselink" />
+    </joint>
+
+
+    <xacro:inspire_gripper_ros2_control
+        name="${name}"
+        prefix="${name}_"
+        use_sim="${use_sim}"
+        use_mock_components="${use_mock_components}"
+        serial_port="${serial_port}"
+    />
+
+  </xacro:macro>
+</robot>

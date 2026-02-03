@@ -992,4 +992,18 @@
       <material name="white"/>
     </visual>
   </link>
+  <!-- gripper_tcp -->
+  <link name="gripper_tcp">
+    <visual>
+      <geometry>
+        <sphere radius="0.005"/>
+      </geometry>
+    </visual>
+  </link>
+
+  <joint name="gripper_tcp_joint" type="fixed">
+    <parent link="right_wrist_yaw_link"/>
+    <child link="gripper_tcp"/>
+    <origin xyz="0.173 0.007 0.0" rpy="0 0 0"/>
+  </joint>
 </robot>

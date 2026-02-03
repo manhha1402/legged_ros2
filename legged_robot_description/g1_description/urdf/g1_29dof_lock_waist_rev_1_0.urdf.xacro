@@ -5,7 +5,7 @@
   <xacro:arg name="prefix" default="" />
   <xacro:arg name="network_interface" default="lo" />
   <xacro:arg name="use_sim" default="true" />
-
+  <xacro:arg name="use_mock_components" default="false" />
   <xacro:include filename="$(find g1_description)/urdf/g1_29dof_lock_waist_rev_1_0_macro.urdf.xacro" />
   
   <xacro:include filename="$(find g1_description)/urdf/g1_29dof_lock_waist_rev_1_0.ros2_control.xacro" />
@@ -16,5 +16,17 @@
     prefix="$(arg prefix)" 
     network_interface="$(arg network_interface)"
     use_sim="$(arg use_sim)"/>
+   <!-- Gipper URDF -->
+  <xacro:include filename="$(find g1_description)/urdf/inspire_gripper_macro.xacro" />
+
+  <!-- Link gripper with right arm -->
+  <xacro:inspire_gripper name="right" parent_link="right_wrist_yaw_link" use_sim="$(arg use_sim)" use_mock_components="$(arg use_mock_components)" serial_port="/dev/ttyUSB0">
+    <origin xyz="0.02 0 0" rpy="0 1.5708 0" />
+  </xacro:inspire_gripper>
+
+  <!-- Link gripper with left arm -->
+  <xacro:inspire_gripper name="left" parent_link="left_wrist_yaw_link" use_sim="$(arg use_sim)" use_mock_components="$(arg use_mock_components)" serial_port="/dev/ttyUSB1">
+    <origin xyz="0.02 0 0" rpy="0 1.5708 0" />
+  </xacro:inspire_gripper>
 
 </robot>
