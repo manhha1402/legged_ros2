@@ -12,7 +12,7 @@ from launch_ros.parameter_descriptions import ParameterValue
 def launch_setup(context, *args, **kwargs):
     use_sim_str = LaunchConfiguration("use_sim").perform(context).lower()
     use_sim = (use_sim_str == "true")
-
+    use_sim_time = False
     enable_lowlevel_write_str = LaunchConfiguration("enable_lowlevel_write").perform(context).lower()
     enable_lowlevel_write_bool = (enable_lowlevel_write_str == "true")
 
@@ -74,6 +74,7 @@ def launch_setup(context, *args, **kwargs):
             robot_description,
             rl_policy_path_param,
             {
+                "use_sim_time": use_sim_time,
                 "use_sim": use_sim,
                 "use_gains": not use_sim,
                 "network_interface": network_interface,
@@ -88,7 +89,7 @@ def launch_setup(context, *args, **kwargs):
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+        parameters=[robot_description, {"use_sim_time": use_sim_time}],
     )
 
     static_args = ["static_controller", "--controller-manager", "/controller_manager"]
@@ -127,6 +128,7 @@ def launch_setup(context, *args, **kwargs):
         package="rviz2",
         executable="rviz2",
         arguments=["-d", rviz_config_file],
+        parameters=[{"use_sim_time": use_sim_time}],
         condition=IfCondition(use_rviz),
     )
 
@@ -151,13 +153,16 @@ def launch_setup(context, *args, **kwargs):
         static_controller_spawner,
         delay_after_static,
         delay_rviz_after_jsb,
-        rqt_controller_manager,
+        #rqt_controller_manager,
     ] + sim_joy_nodes
 
 
 def generate_launch_description():
     declared_arguments = []
     declared_arguments.append(DeclareLaunchArgument("use_sim", default_value="true"))
+    declared_arguments.append(
+        DeclareLaunchArgument("use_sim_time", default_value=LaunchConfiguration("use_sim"))
+    )
     declared_arguments.append(DeclareLaunchArgument("description_package", default_value="g1_description"))
     declared_arguments.append(
         DeclareLaunchArgument("description_file", default_value="g1_29dof_lock_waist_rev_1_0.urdf.xacro"))
