@@ -10,6 +10,8 @@ from launch_ros.parameter_descriptions import ParameterValue
 
 
 def launch_setup(context, *args, **kwargs):
+    # use_sim:=true  → URDF uses TopicBasedSystem (Isaac-style topics). Not connected to MuJoCo DDS.
+    # For unitree_mujoco, use use_sim:=false so URDF loads G1SystemInterface (rt/lowcmd, rt/lowstate).
     use_sim_str = LaunchConfiguration("use_sim").perform(context).lower()
     use_sim = (use_sim_str == "true")
     use_sim_time = False
@@ -18,6 +20,7 @@ def launch_setup(context, *args, **kwargs):
 
     prefix = LaunchConfiguration("prefix").perform(context)
     network_interface = LaunchConfiguration("network_interface").perform(context)
+    domain_id = LaunchConfiguration("domain_id").perform(context)
     description_package = LaunchConfiguration("description_package").perform(context)
     description_file = LaunchConfiguration("description_file").perform(context)
     rl_policy = LaunchConfiguration("rl_policy").perform(context)
@@ -30,7 +33,8 @@ def launch_setup(context, *args, **kwargs):
         PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
         " prefix:=", prefix,
         " use_sim:=", "true" if use_sim else "false",
-        " network_interface:=", network_interface
+        " network_interface:=", network_interface,
+        " domain_id:=", domain_id,
     ])
     robot_description = {"robot_description": ParameterValue(robot_description_content, value_type=str)}
 
@@ -41,7 +45,7 @@ def launch_setup(context, *args, **kwargs):
         )
     }
     controller_config_path = PathJoinSubstitution([FindPackageShare(description_package), "config", controller_config])
-    rviz_config_file = PathJoinSubstitution([FindPackageShare(description_package), "rviz2", "g1.rviz"])
+    rviz_config_file = PathJoinSubstitution([FindPackageShare(description_package), "rviz", "g1.rviz"])
 
     if use_sim:
         control_node_pkg = "controller_manager"
@@ -51,19 +55,19 @@ def launch_setup(context, *args, **kwargs):
         control_node_exe = "g1_node"
 
     sim_joy_nodes = []
-    if use_sim:
-        joy_node = Node(
-            package="joy",
-            executable="joy_node",
-            name="joy_node",
-            parameters=[{"dev": "/dev/input/js0"}]  
-        )
-        joy_teleop_node = Node(
-            package="g1_description", 
-            executable="sim_joy_teleop.py",  
-            output="screen"
-        )
-        sim_joy_nodes = [joy_node, joy_teleop_node]
+    # if use_sim:
+    #     joy_node = Node(
+    #         package="joy",
+    #         executable="joy_node",
+    #         name="joy_node",
+    #         parameters=[{"dev": "/dev/input/js0"}]  
+    #     )
+    #     joy_teleop_node = Node(
+    #         package="g1_description", 
+    #         executable="sim_joy_teleop.py",  
+    #         output="screen"
+    #     )
+    #     sim_joy_nodes = [joy_node, joy_teleop_node]
 
 
     control_node = Node(
@@ -78,7 +82,8 @@ def launch_setup(context, *args, **kwargs):
                 "use_sim": use_sim,
                 "use_gains": not use_sim,
                 "network_interface": network_interface,
-                "enable_lowlevel_write": enable_lowlevel_write_bool,  
+                "domain_id": int(domain_id),
+                "enable_lowlevel_write": enable_lowlevel_write_bool,
             },
         ],
         remappings=[("~/robot_description", "/robot_description")],
@@ -121,6 +126,8 @@ def launch_setup(context, *args, **kwargs):
     rqt_controller_manager = Node(
         package="rqt_controller_manager",
         executable="rqt_controller_manager",
+        # RQT plugin cache sometimes misses plugins until discovery is forced.
+        arguments=["--force-discover"],
         condition=IfCondition(use_rqt_cm),
     )
 
@@ -153,13 +160,20 @@ def launch_setup(context, *args, **kwargs):
         static_controller_spawner,
         delay_after_static,
         delay_rviz_after_jsb,
-        #rqt_controller_manager,
-    ] + sim_joy_nodes
+        rqt_controller_manager,
+    ] # + sim_joy_nodes
 
 
 def generate_launch_description():
     declared_arguments = []
-    declared_arguments.append(DeclareLaunchArgument("use_sim", default_value="true"))
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "use_sim",
+            default_value="true",
+            description="If true, URDF uses TopicBasedSystem (Isaac-style topics). "
+            "For MuJoCo + unitree_mujoco DDS, set false.",
+        )
+    )
     declared_arguments.append(
         DeclareLaunchArgument("use_sim_time", default_value=LaunchConfiguration("use_sim"))
     )
@@ -172,6 +186,13 @@ def generate_launch_description():
     declared_arguments.append(DeclareLaunchArgument("use_rqt_cm", default_value="true"))
     declared_arguments.append(DeclareLaunchArgument("prefix", default_value='""'))
     declared_arguments.append(DeclareLaunchArgument("network_interface", default_value="lo"))
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "domain_id",
+            default_value="0",
+            description="Unitree DDS domain id; must match unitree_mujoco simulate/config.yaml or `./unitree_mujoco -i`",
+        )
+    )
     declared_arguments.append(DeclareLaunchArgument("enable_lowlevel_write", default_value="true"))
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])

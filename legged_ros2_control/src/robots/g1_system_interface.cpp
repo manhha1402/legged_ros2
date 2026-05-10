@@ -11,6 +11,8 @@
 
 #include "legged_ros2_control/robots/unitree/robots/g1/g1_system_interface.hpp"
 
+#include <string>
+
 namespace legged {
 
 CallbackReturn
@@ -36,10 +38,21 @@ G1SystemInterface::on_init(const hardware_interface::HardwareInfo &info) {
   enable_lowlevel_write_ =
       node->get_parameter_or<bool>("enable_lowlevel_write", true);
 
+  const auto it_domain = info_.hardware_parameters.find("domain_id");
+  if (it_domain != info_.hardware_parameters.end()) {
+    try {
+      domain_id_ = std::stoi(it_domain->second);
+    } catch (const std::exception &) {
+      RCLCPP_ERROR(logger_, "Invalid hardware param domain_id: %s",
+                   it_domain->second.c_str());
+      return CallbackReturn::ERROR;
+    }
+  }
+  domain_id_ = node->get_parameter_or<int>("domain_id", domain_id_);
+
   // debug print
-  RCLCPP_INFO(logger_, "G1SystemInterface get param network interface: %s",
-              network_interface_.c_str());
-  RCLCPP_INFO(logger_, "G1SystemInterface get param low-level write: %s",
+  RCLCPP_INFO(logger_, "network interface: %s, domain_id: %d, low-level write: %s ",
+              network_interface_.c_str(), domain_id_,
               enable_lowlevel_write_ ? "true" : "false");
 
   return CallbackReturn::SUCCESS;
@@ -50,10 +63,11 @@ CallbackReturn G1SystemInterface::on_configure(
 
   RCLCPP_INFO(logger_, "Configuring G1SystemInterface...");
 
-  unitree::robot::ChannelFactory::Instance()->Init(0, network_interface_);
+  unitree::robot::ChannelFactory::Instance()->Init(domain_id_,
+                                                     network_interface_);
 
   RCLCPP_INFO(logger_,
-              "G1SystemInterface configured with network interface: %s",
+              "Configured with network interface: %s",
               network_interface_.c_str());
 
   // Skip motion switcher for simulation (loopback interface)
@@ -91,11 +105,10 @@ CallbackReturn G1SystemInterface::on_configure(
   lowcmd_publisher_ = std::make_unique<g1::LowCmdPublisher>();
 
   RCLCPP_INFO(logger_,
-              "G1SystemInterface waiting for connection to G1 robot...");
+              "Waiting for connection to G1 robot...");
   lowstate_subscriber_->wait_for_connection();
-  RCLCPP_INFO(logger_, "G1SystemInterface connected to G1 robot");
 
-  RCLCPP_INFO(logger_, "G1SystemInterface initialized successfully");
+  RCLCPP_INFO(logger_, "Initialized successfully");
 
   return CallbackReturn::SUCCESS;
 }
@@ -105,7 +118,7 @@ bool G1SystemInterface::build_joint_data_() {
     const auto &jnt_name = joint_data_[i].name;
     auto it = g1_joint_index_map.find(jnt_name);
     if (it == g1_joint_index_map.end()) {
-      RCLCPP_ERROR(logger_, "Joint %s not found in G1 joint index map",
+      RCLCPP_ERROR(logger_, "Joint %s not found in joint index map",
                    jnt_name.c_str());
       return false;
     }

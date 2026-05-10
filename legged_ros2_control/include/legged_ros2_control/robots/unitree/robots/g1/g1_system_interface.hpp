@@ -59,6 +59,8 @@ protected:
   bool build_joint_data_() override;
 
   std::string network_interface_;
+  /** DDS domain ID; must match unitree_mujoco simulate/config.yaml or `-i` flag. */
+  int domain_id_{0};
   std::shared_ptr<unitree::robot::b2::MotionSwitcherClient> msc_;
 
   std::unique_ptr<g1::LowCmdPublisher> lowcmd_publisher_;

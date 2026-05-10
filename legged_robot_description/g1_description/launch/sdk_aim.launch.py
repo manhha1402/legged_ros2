@@ -18,6 +18,7 @@ def launch_setup(context, *args, **kwargs):
 
     prefix = LaunchConfiguration("prefix").perform(context)
     network_interface = LaunchConfiguration("network_interface").perform(context)
+    domain_id = LaunchConfiguration("domain_id").perform(context)
     description_package = LaunchConfiguration("description_package").perform(context)
     description_file = LaunchConfiguration("description_file").perform(context)
     rl_policy = LaunchConfiguration("rl_policy").perform(context)
@@ -30,7 +31,8 @@ def launch_setup(context, *args, **kwargs):
         PathJoinSubstitution([FindPackageShare(description_package), "urdf", description_file]),
         " prefix:=", prefix,
         " use_sim:=", "true" if use_sim else "false",
-        " network_interface:=", network_interface
+        " network_interface:=", network_interface,
+        " domain_id:=", domain_id,
     ])
     robot_description = {"robot_description": ParameterValue(robot_description_content, value_type=str)}
 
@@ -77,7 +79,8 @@ def launch_setup(context, *args, **kwargs):
                 "use_sim": use_sim,
                 "use_gains": not use_sim,
                 "network_interface": network_interface,
-                "enable_lowlevel_write": enable_lowlevel_write_bool,  
+                "domain_id": int(domain_id),
+                "enable_lowlevel_write": enable_lowlevel_write_bool,
             },
         ],
         remappings=[("~/robot_description", "/robot_description")],
@@ -226,6 +229,13 @@ def generate_launch_description():
     declared_arguments.append(DeclareLaunchArgument("use_rqt_cm", default_value="true"))
     declared_arguments.append(DeclareLaunchArgument("prefix", default_value='""'))
     declared_arguments.append(DeclareLaunchArgument("network_interface", default_value="lo"))
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            "domain_id",
+            default_value="0",
+            description="Unitree DDS domain id; must match unitree_mujoco simulate/config.yaml or `./unitree_mujoco -i`",
+        )
+    )
     declared_arguments.append(DeclareLaunchArgument("enable_lowlevel_write", default_value="true"))
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])

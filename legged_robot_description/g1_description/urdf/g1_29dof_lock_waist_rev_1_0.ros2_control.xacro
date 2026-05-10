@@ -1,21 +1,22 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="g1_ros2_control" params="prefix network_interface:=lo use_sim:=true">
+  <xacro:macro name="g1_ros2_control" params="prefix network_interface:=lo use_sim:=true domain_id:=0">
 
     <ros2_control name="g1_ros2_control" type="system">
       <hardware>
         <xacro:if value="${use_sim}">
-          <!-- Mode Isaac Sim -->
+          <!-- Isaac-style sim: topics /joint_commands, /joint_states (not MuJoCo DDS). -->
           <plugin>topic_based_ros2_control/TopicBasedSystem</plugin>
           <param name="joint_commands_topic">/joint_commands</param>
           <param name="joint_states_topic">/joint_states</param>
           <param name="imu_sensor_topic">/imu</param>
         </xacro:if>
         <xacro:unless value="${use_sim}">
-          <!-- Mode Mujoco and Real Robot -->
+          <!-- MuJoCo (unitree_mujoco DDS) and real robot -->
           <plugin>legged_ros2_control/G1SystemInterface</plugin>
           <param name="network_interface">${network_interface}</param>
+          <param name="domain_id">${domain_id}</param>
         </xacro:unless>
       </hardware>
 

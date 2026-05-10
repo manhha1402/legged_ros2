@@ -81,7 +81,7 @@ public:
 
 protected:
   const rclcpp::Logger logger_ =
-      rclcpp::get_logger("legged_ros2_control.legged_system_interface");
+      rclcpp::get_logger("legged_ros2_control");
   // Data
   std::vector<JointData> joint_data_;
   std::vector<ImuData> imu_data_;

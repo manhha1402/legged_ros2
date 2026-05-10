@@ -39,6 +39,8 @@ public:
             node_->get_parameter_or<bool>("cmd_vel.publish", true)),
         unitree_net_if_(
             node_->get_parameter_or<std::string>("network_interface", "")),
+        unitree_domain_id_(
+            node_->get_parameter_or<int>("domain_id", 0)),
         controller_switch_client_(
             node_
                 ->create_client<controller_manager_msgs::srv::SwitchController>(
@@ -61,11 +63,10 @@ public:
     wait_for_service();
 
     RCLCPP_INFO(node_->get_logger(),
-                "Unitree node try to connect in network interface: %s",
-                unitree_net_if_.c_str());
-    // Domain 0 is required to communicate with real Unitree robot
-    // Set ROS_DOMAIN_ID=1 to avoid conflict with ROS 2's CycloneDDS
-    unitree::robot::ChannelFactory::Instance()->Init(0, unitree_net_if_);
+                "Unitree node try to connect (DDS domain %d, interface %s)",
+                unitree_domain_id_, unitree_net_if_.c_str());
+    unitree::robot::ChannelFactory::Instance()->Init(unitree_domain_id_,
+                                                     unitree_net_if_);
     low_state_subscriber_ =
         std::make_shared<UnitreeSubscriberType>("rt/lowstate");
     RCLCPP_INFO(node_->get_logger(),
@@ -209,6 +210,7 @@ private:
   } cmd_vel_scale_;
   bool publish_cmd_vel_ = true;
   std::string unitree_net_if_;
+  int unitree_domain_id_;
   std::shared_ptr<UnitreeSubscriberType> low_state_subscriber_;
   rclcpp::Client<controller_manager_msgs::srv::SwitchController>::SharedPtr
       controller_switch_client_;
